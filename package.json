@@ -1,7 +1,7 @@
 {
   "name": "io-game-from-scratch",
   "version": "1.0.0",
-  "description": "",
+  "description": "<h1 align=\"center\">\r     <img alt=\"An Example .io Game\" title=\"An Example .io Game\" src=\"https://github.com/vzhou842/example-.io-game/blob/master/public/assets/icon.svg\" width=\"140\"> <br />\r     An Example .io Game\r </h1>\r <h4 align=\"center\">\r   <a href=\"https://example-io-game.victorzhou.com\">https://example-io-game.victorzhou.com</a>\r </h4>",
   "main": "src/server/server.js",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
@@ -13,7 +13,7 @@
   "author": "Victor Zhou",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "html-webpack-plugin": "^3.2.0",
     "lodash": "^4.17.15",
     "shortid": "^2.2.15",
@@ -39,5 +39,13 @@
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "webpack-cli": "^3.3.11",
     "webpack-merge": "^4.2.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesShep64/Pirate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JamesShep64/Pirate/issues"
+  },
+  "homepage": "https://github.com/JamesShep64/Pirate#readme"
 }

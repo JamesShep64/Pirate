@@ -10,7 +10,8 @@ module.exports = Object.freeze({
   MSG_TYPES: {
     JOIN_GAME: 'join_game',
     GAME_UPDATE: 'update',
-    INPUT: 'input',
+    PRESS : 'press',
+    RELEASE : 'release',
     GAME_OVER: 'dead',
   },
 });

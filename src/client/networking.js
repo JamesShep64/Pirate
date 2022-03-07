@@ -34,6 +34,10 @@ export const play = username => {
   socket.emit(Constants.MSG_TYPES.JOIN_GAME, username);
 };
 
-export const updateDirection = throttle(20, dir => {
-  socket.emit(Constants.MSG_TYPES.INPUT, dir);
+export const updatePress = throttle(20, key => {
+  socket.emit(Constants.MSG_TYPES.PRESS, key);
+});
+
+export const updateRelease = throttle(20, key => {
+  socket.emit(Constants.MSG_TYPES.RELEASE, key);
 });

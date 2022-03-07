@@ -1,6 +1,6 @@
+const socket = require('socket.io-client/lib/socket');
 const Constants = require('../shared/constants');
-const Player = require('./player');
-const applyCollisions = require('./collisions');
+const Player = require('./playerObject');
 
 class Game {
   constructor() {
@@ -17,7 +17,7 @@ class Game {
     // Generate a position to start this player at.
     const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
     const y = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
-    this.players[socket.id] = new Player(socket.id, username, x, y);
+    this.players[socket.id] = new Player(socket.id, username, x, y,0,0);
   }
 
   removePlayer(socket) {
@@ -25,11 +25,34 @@ class Game {
     delete this.players[socket.id];
   }
 
-  handleInput(socket, dir) {
-    if (this.players[socket.id]) {
-      this.players[socket.id].setDirection(dir);
+  handlePress(socket,key){
+    if(this.players[socket.id]){
+      if(key == 'd'){
+        this.players[socket.id].moveRight();
+      }
+      if(key == 'a'){
+        this.players[socket.id].moveLeft();
+      }
+      
+      if(key ==" "){
+        this.players[socket.id].moveUp();
+      }
+      
     }
   }
+
+  handleRelease(socket,key){
+    if(this.players[socket.id]){
+      if(key == 'd'){
+        this.players[socket.id].stopRight();
+      }
+
+      if(key == 'a'){
+        this.players[socket.id].stopLeft();
+      }
+    }
+  }
+
 
   update() {
     // Calculate time elapsed
