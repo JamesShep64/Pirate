@@ -1,4 +1,4 @@
-class PhysObject {
+class RoundObject {
   constructor(id, x, y, dir, speed) {
     this.id = id;
     this.x = x;

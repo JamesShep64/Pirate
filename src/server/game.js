@@ -1,11 +1,13 @@
 const socket = require('socket.io-client/lib/socket');
 const Constants = require('../shared/constants');
 const Player = require('./playerObject');
+const Block = require('./Block');
 
 class Game {
   constructor() {
     this.sockets = {};
     this.players = {};
+    this.blocks = [];
     this.lastUpdateTime = Date.now();
     this.shouldSendUpdate = false;
     setInterval(this.update.bind(this), 1000 / 60);
@@ -15,14 +17,18 @@ class Game {
     this.sockets[socket.id] = socket;
 
     // Generate a position to start this player at.
-    const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
-    const y = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
+     const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
+     const y = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
     this.players[socket.id] = new Player(socket.id, username, x, y,0,0);
   }
 
   removePlayer(socket) {
     delete this.sockets[socket.id];
     delete this.players[socket.id];
+  }
+
+  addShip(socket){
+    this.blocks.push(new Block(null,this.players[socket.id].x,this.players[socket.id].y,null,0));
   }
 
   handlePress(socket,key){
@@ -36,6 +42,10 @@ class Game {
       
       if(key ==" "){
         this.players[socket.id].moveUp();
+      }
+      
+      if(key == "q"){
+         this.players[socket.id].TEMPstop();
       }
       
     }
@@ -67,8 +77,11 @@ class Game {
      player.update(dt);
     });
 
-    // Apply collisions, give players score for hitting 
-  
+    // update each block
+    console.log(this.blocks);
+    this.blocks.forEach(block => {
+      block.update(dt);
+    });
     
 
     // Send a game update to each player every other time
@@ -102,6 +115,7 @@ class Game {
       t: Date.now(),
       me: player.serializeForUpdate(),
       others: nearbyPlayers.map(p => p.serializeForUpdate()),
+      blocks: this.blocks.map(b => b.serializeForUpdate()),
       leaderboard,
     };
   }

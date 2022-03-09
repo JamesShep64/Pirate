@@ -1,7 +1,7 @@
 const Constants = require('../shared/constants');
 
 class PlayerObject {
-  constructor(id, username, x, y, x_velocity, y_velocity) {
+  constructor(id, username,x, y, x_velocity, y_velocity,direction) {
     this.username = username;
     this.score = 0;
     this.x_velocity = x_velocity;
@@ -9,8 +9,12 @@ class PlayerObject {
     this.x = x;
     this.y = y;
     this.id = id;
+    this.direction = direction;
 
   }
+    TEMPstop(){
+      this.y_velocity = 0;
+    }
     moveLeft(){
         this.x_velocity = -500;
     }
@@ -32,9 +36,9 @@ class PlayerObject {
     }
   // Move the player, update score per second
     update(dt) {
-    let gravity = 20;
-    if(this.y_velocity < 8000){
-    this.y_velocity += gravity;
+    let gravity = 1000;
+    if(this.y_velocity < 1000){
+    this.y_velocity += gravity * dt;
     }
     this.x += dt * this.x_velocity;
     this.y += dt * this.y_velocity;

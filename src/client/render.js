@@ -1,12 +1,13 @@
 // Learn more about this file at:
 // https://victorzhou.com/blog/build-an-io-game-part-1/#5-client-rendering
 import { debounce } from 'throttle-debounce';
+import constants from '../shared/constants';
 import { getAsset } from './assets';
 import { getCurrentState } from './state';
 
 const Constants = require('../shared/constants');
 
-const { PLAYER_RADIUS, PLAYER_MAX_HP, MAP_SIZE } = Constants;
+const { PLAYER_RADIUS, MAP_SIZE,BLOCK_SIZE } = Constants;
 
 // Get the canvas graphics context
 const canvas = document.getElementById('game-canvas');
@@ -24,7 +25,7 @@ function setCanvasDimensions() {
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
 
 function render() {
-  const { me, others} = getCurrentState();
+  const { me, others, blocks} = getCurrentState();
   if (!me) {
     return;
   }
@@ -42,6 +43,9 @@ function render() {
   // Draw all players
   renderPlayer(me, me);
   others.forEach(renderPlayer.bind(null, me));
+  
+  //Draw all blocks
+  blocks.forEach(renderBlock.bind(null,me));
 }
 
 function renderBackground(x, y) {
@@ -61,13 +65,13 @@ function renderBackground(x, y) {
   context.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-// Renders a ship at the given coordinates
+// Renders a player at the given coordinates
 function renderPlayer(me, player) {
   const { x, y, direction } = player;
   const canvasX = canvas.width / 2 + x - me.x;
   const canvasY = canvas.height / 2 + y - me.y;
 
-  // Draw ship
+  // Draw player
   context.save();
   context.translate(canvasX, canvasY);
   context.rotate(direction);
@@ -81,7 +85,23 @@ function renderPlayer(me, player) {
   context.restore();
 }
 
-
+function renderBlock(me,block){
+  const {x , y , direction} = block;
+  const canvasX = canvas.width/2 + x - me.x;
+  const canvasY = canvas.height/2 + y - me.y;
+  
+  context.save();
+  context.fillStyle = 'blue';
+  context.translate(canvasX, canvasY);
+  context.rotate(direction);
+  context.fillRect(
+    -constants.BLOCK_SIZE/2,
+    -constants.BLOCK_SIZE/2,
+    constants.BLOCK_SIZE,
+    constants.BLOCK_SIZE,
+  );
+  context.restore();
+}
 
 function renderMainMenu() {
   const t = Date.now() / 7500;

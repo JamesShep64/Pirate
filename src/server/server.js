@@ -42,7 +42,8 @@ io.on('connection', socket => {
 const game = new Game();
 
 function joinGame(username) {
-  game.addPlayer(this, username);
+  const p =game.addPlayer(this, username);
+  game.addShip(this);
   
 }
 function handlePress(key){
