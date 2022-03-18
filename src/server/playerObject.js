@@ -10,17 +10,31 @@ class PlayerObject {
     this.y = y;
     this.id = id;
     this.direction = direction;
+    this.movingLeft = false;
+    this.movingRight = false;
 
   }
     TEMPstop(){
       this.y_velocity = 0;
     }
     moveLeft(){
+      if(!this.movingRight){
         this.x_velocity = -500;
+      }
+      else{
+        this.x_velocity = 0;
+      }
+        this.movingLeft = true;
     }
    
     moveRight(){
+      if(!this.movingLeft){
         this.x_velocity = 500;
+      }
+      else{
+        this.x_velocity = 0;
+      }
+      this.movingRight = true;
     }
     
     moveUp(){
@@ -29,10 +43,12 @@ class PlayerObject {
 
     stopRight(){
         this.x_velocity = 0;
+        this.movingRight = false;
     }
 
     stopLeft(){
         this.x_velocity  = 0;
+        this.movingLeft = false;
     }
   // Move the player, update score per second
     update(dt) {
@@ -58,6 +74,8 @@ class PlayerObject {
     const dy = this.y - object.y;
     return Math.sqrt(dx * dx + dy * dy);
   }
+
+ 
 
   serializeForUpdate() {
     return {

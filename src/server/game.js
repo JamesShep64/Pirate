@@ -1,7 +1,8 @@
 const socket = require('socket.io-client/lib/socket');
 const Constants = require('../shared/constants');
 const Player = require('./playerObject');
-const Block = require('./Block');
+const Block = require('./block');
+const applyPlayerBlockCollisions = require('./playerBlockCollisions');
 
 class Game {
   constructor() {
@@ -78,10 +79,13 @@ class Game {
     });
 
     // update each block
-    console.log(this.blocks);
     this.blocks.forEach(block => {
       block.update(dt);
     });
+
+    //apply block player collisions
+    applyPlayerBlockCollisions(Object.values(this.players),this.blocks);
+
     
 
     // Send a game update to each player every other time

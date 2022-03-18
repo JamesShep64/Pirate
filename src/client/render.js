@@ -95,8 +95,8 @@ function renderBlock(me,block){
   context.translate(canvasX, canvasY);
   context.rotate(direction);
   context.fillRect(
-    -constants.BLOCK_SIZE/2,
-    -constants.BLOCK_SIZE/2,
+    0,
+    0,
     constants.BLOCK_SIZE,
     constants.BLOCK_SIZE,
   );
