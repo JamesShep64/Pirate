@@ -1,7 +1,7 @@
 // Learn more about this file at:
 // https://victorzhou.com/blog/build-an-io-game-part-1/#5-client-rendering
 import { debounce } from 'throttle-debounce';
-import constants from '../shared/constants';
+import constants, { PLAYER_SIZE } from '../shared/constants';
 import { getAsset } from './assets';
 import { getCurrentState } from './state';
 
@@ -42,7 +42,7 @@ function render() {
 
   // Draw all players
   renderPlayer(me, me);
-  others.forEach(renderPlayer.bind(null, me));
+  others.forEach(p => renderPlayer.bind(null, me));
   
   //Draw all blocks
   blocks.forEach(renderBlock.bind(null,me));
@@ -51,58 +51,52 @@ function render() {
 function renderBackground(x, y) {
   const backgroundX = MAP_SIZE / 2 - x + canvas.width / 2;
   const backgroundY = MAP_SIZE / 2 - y + canvas.height / 2;
-  const backgroundGradient = context.createRadialGradient(
-    backgroundX,
-    backgroundY,
-    MAP_SIZE / 10,
-    backgroundX,
-    backgroundY,
-    MAP_SIZE / 2,
-  );
-  backgroundGradient.addColorStop(0, 'black');
-  backgroundGradient.addColorStop(1, 'gray');
-  context.fillStyle = backgroundGradient;
+  context.fillStyle = 'white';
   context.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 // Renders a player at the given coordinates
 function renderPlayer(me, player) {
-  const { x, y, direction } = player;
-  const canvasX = canvas.width / 2 + x - me.x;
-  const canvasY = canvas.height / 2 + y - me.y;
+  const {col, x, y,points} = player;
+  const canvasX = me.x - canvas.width / 2;
+  const canvasY = me.y - canvas.height / 2;
 
-  // Draw player
+  // Draw ship
   context.save();
-  context.translate(canvasX, canvasY);
-  context.rotate(direction);
-  context.drawImage(
-    getAsset('player.svg'),
-    -PLAYER_RADIUS,
-    -PLAYER_RADIUS,
-    PLAYER_RADIUS * 2,
-    PLAYER_RADIUS * 2,
-  );
+  context.translate(x - canvasX, y - canvasY);
+  if(col){
+    context.strokeStyle = 'blue';
+  }
+  drawRect(0,0,points);
   context.restore();
 }
 
 function renderBlock(me,block){
-  const {x , y , direction} = block;
-  const canvasX = canvas.width/2 + x - me.x;
-  const canvasY = canvas.height/2 + y - me.y;
-  
+  const { x, y,points} = block;
+  const canvasX = canvas.width / 2 + x - me.x;
+  const canvasY = canvas.height / 2 + y - me.y;
+
+  // Draw ship
   context.save();
-  context.fillStyle = 'blue';
   context.translate(canvasX, canvasY);
-  context.rotate(direction);
-  context.fillRect(
-    0,
-    0,
-    constants.BLOCK_SIZE,
-    constants.BLOCK_SIZE,
-  );
+  drawRect(0,0,points);
   context.restore();
 }
+function drawRect(x, y, points){
+  context.beginPath();
+  context.moveTo(x + points[0].x, y + points[0].y);
+  context.lineTo(x + points[1].x, y + points[1].y);
+  
+  context.moveTo(x + points[1].x, y + points[1].y);
+  context.lineTo(x + points[2].x, y + points[2].y);
+  
+  context.moveTo(x + points[2].x, y + points[2].y);
+  context.lineTo(x + points[3].x, y + points[3].y);
 
+  context.moveTo(x + points[3].x, y + points[3].y);
+  context.lineTo(x + points[0].x, y + points[0].y);
+  context.stroke();
+}
 function renderMainMenu() {
   const t = Date.now() / 7500;
   const x = MAP_SIZE / 2 + 800 * Math.cos(t);

@@ -34,7 +34,8 @@ io.on('connection', socket => {
 
   socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
   socket.on(Constants.MSG_TYPES.PRESS, handlePress);
-  socket.on(Constants.MSG_TYPES.RELEASE,handleRelease);
+  socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
+  socket.on(Constants.MSG_TYPES.CLICK, handleClick);
   socket.on('disconnect', onDisconnect);
 });
 
@@ -42,15 +43,19 @@ io.on('connection', socket => {
 const game = new Game();
 
 function joinGame(username) {
-  const p =game.addPlayer(this, username);
+  game.addPlayer(this, username);
   game.addShip(this);
+  game.addCursor(this);
   
 }
 function handlePress(key){
   game.handlePress(this,key);
 }
 function handleRelease(key){
-  game.handleRelease(this,key)
+  game.handleRelease(this,key);
+}
+function handleClick(click){
+  game.handleClick(this,click);
 }
 
 function onDisconnect() {

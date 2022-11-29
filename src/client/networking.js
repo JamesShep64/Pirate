@@ -4,6 +4,7 @@ import io from 'socket.io-client';
 import { throttle } from 'throttle-debounce';
 import { processGameUpdate } from './state';
 
+const canvas = document.getElementById('game-canvas');
 const Constants = require('../shared/constants');
 
 const socketProtocol = (window.location.protocol.includes('https')) ? 'wss' : 'ws';
@@ -18,7 +19,7 @@ const connectedPromise = new Promise(resolve => {
 export const connect = onGameOver => (
   connectedPromise.then(() => {
     // Register callbacks
-    socket.on(Constants.MSG_TYPES.GAME_UPDATE, processGameUpdate);
+    socket.on(Constants.MSG_TYPES.GAME_UPDATE,processGameUpdate);
     socket.on(Constants.MSG_TYPES.GAME_OVER, onGameOver);
     socket.on('disconnect', () => {
       console.log('Disconnected from server.');
@@ -40,4 +41,8 @@ export const updatePress = throttle(20, key => {
 
 export const updateRelease = throttle(20, key => {
   socket.emit(Constants.MSG_TYPES.RELEASE, key);
+});
+
+export const updateClick = throttle(20, (x, y) => {
+  socket.emit(Constants.MSG_TYPES.CLICK, {x,y, canvasWidth: canvas.width, canvasHeight: canvas.height});
 });

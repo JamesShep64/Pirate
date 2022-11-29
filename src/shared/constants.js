@@ -3,9 +3,10 @@ module.exports = Object.freeze({
   PLAYER_MAX_HP: 100,
   PLAYER_SPEED: 400,
   PLAYER_FIRE_COOLDOWN: 0.25,
-  BLOCK_SIZE: 400,
+  BLOCK_SIZE: 100,
   SCORE_PER_SECOND: 1,
-
+  PLAYER_SIZE: 50,
+  
   MAP_SIZE: 3000,
   MSG_TYPES: {
     JOIN_GAME: 'join_game',
@@ -13,5 +14,6 @@ module.exports = Object.freeze({
     PRESS : 'press',
     RELEASE : 'release',
     GAME_OVER: 'dead',
+    CLICK: 'click',
   },
 });
