@@ -8,7 +8,7 @@ import { getCurrentState } from './state';
 const Constants = require('../shared/constants');
 
 const { PLAYER_RADIUS, MAP_SIZE,BLOCK_SIZE } = Constants;
-
+var lastUpdateTime  = 0;
 // Get the canvas graphics context
 const canvas = document.getElementById('game-canvas');
 const context = canvas.getContext('2d');
@@ -25,78 +25,242 @@ function setCanvasDimensions() {
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
 
 function render() {
-  const { me, others, blocks} = getCurrentState();
+  const { me, others, blocks, ships,ratio} = getCurrentState();
   if (!me) {
+    console.log('a');
     return;
   }
-
+  const now = Date.now();
+  console.log(ratio);
+  lastUpdateTime = now;
   // Draw background
-  renderBackground(me.x, me.y);
+  renderBackground(me.eyes.x, me.eyes.y);
 
-  // Draw boundaries
-  context.strokeStyle = 'black';
-  context.lineWidth = 1;
-  context.strokeRect(canvas.width / 2 - me.x, canvas.height / 2 - me.y, MAP_SIZE, MAP_SIZE);
-
-
-
-  // Draw all players
-  renderPlayer(me, me);
-  others.forEach(p => renderPlayer.bind(null, me));
+  //draw ship hulls
   
-  //Draw all blocks
-  blocks.forEach(renderBlock.bind(null,me));
+  ships.forEach(ship =>{
+    drawPoly(ship,me);
+    context.fillStyle = '#52300d';
+    context.fill();
+    context.fillStyle = 'black';
+  });
+
+
+  //draw ship damage
+  ships.forEach(ship =>{  
+    drawShipDamage(ship,me);
+  });
+
+  //draw ship parts
+  ships.forEach(ship =>{
+    drawShipParts(ship,me);
+  })
+  
+  //draw me
+  drawPoly(me,me);
+  //draw others
+  others.forEach(player => drawPoly(player,me));
+
+  //draw blocks
+  blocks.forEach(block => drawPoly(block,me));
+  
 }
 
-function renderBackground(x, y) {
-  const backgroundX = MAP_SIZE / 2 - x + canvas.width / 2;
-  const backgroundY = MAP_SIZE / 2 - y + canvas.height / 2;
-  context.fillStyle = 'white';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-// Renders a player at the given coordinates
-function renderPlayer(me, player) {
-  const {col, x, y,points} = player;
-  const canvasX = me.x - canvas.width / 2;
-  const canvasY = me.y - canvas.height / 2;
-
-  // Draw ship
-  context.save();
-  context.translate(x - canvasX, y - canvasY);
-  if(col){
-    context.strokeStyle = 'blue';
+function renderBackground(playerX, playerY){
+  context.fillStyle = '#34cceb';
+  context.fillRect(0,0,canvas.width,canvas.height);
+  for(var x = playerX - canvas.width/2 - 400; x < canvas.width/2 + playerX + 400; x +=20){
+    for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=20){
+      x = Math.ceil(x / 20) * 20;
+      y = Math.ceil(y/20) * 20;
+      if((x % 1980 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && (x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 860 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0))){
+        context.save();
+        context.translate(canvas.width / 2 - playerX + x, canvas.height / 2 - playerY + y);
+        context.beginPath();
+        context.moveTo(170, 80);
+        context.bezierCurveTo(130, 100, 130, 150, 230, 150);
+        context.bezierCurveTo(250, 180, 320, 180, 340, 150);
+        context.bezierCurveTo(420, 150, 420, 120, 390, 100);
+        context.bezierCurveTo(430, 40, 370, 30, 340, 50);
+        context.bezierCurveTo(320, 5, 250, 20, 250, 50);
+        context.bezierCurveTo(200, 5, 150, 20, 170, 80);
+        context.closePath();
+        context.fillStyle = 'white';
+        context.fill();
+        context.restore();
+      }
+    }
   }
-  drawRect(0,0,points);
   context.restore();
+  context.fillStyle = 'black';
 }
 
-function renderBlock(me,block){
-  const { x, y,points} = block;
-  const canvasX = canvas.width / 2 + x - me.x;
-  const canvasY = canvas.height / 2 + y - me.y;
 
-  // Draw ship
-  context.save();
-  context.translate(canvasX, canvasY);
-  drawRect(0,0,points);
-  context.restore();
+function drawPoly(block, me){
+    var canvasX = canvas.width / 2 + block.x - me.eyes.x;
+    var canvasY = canvas.height / 2 + block.y - me.eyes.y;
+    context.restore();
+    var o;
+    context.beginPath();
+    for(var i = 0; i<block.points.length; i++){
+      o = i + 1;
+      if(o == block.points.length){
+        o = 0;
+      }
+      if(i == 0){
+      context.moveTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+      }
+      else{
+      context.lineTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+      }
+      if(i == block.points.length - 1){
+        context.lineTo(canvasX + block.points[0].x, canvasY + block.points[0].y);
+      }
+    }
+    context.closePath();
+    context.stroke();
 }
-function drawRect(x, y, points){
+
+function drawCannonWire(block,me,x,y){
+  var canvasX = canvas.width / 2 + x - me.eyes.x;
+  var canvasY = canvas.height / 2 + y - me.eyes.y;
+  context.restore();
+  var o;
   context.beginPath();
-  context.moveTo(x + points[0].x, y + points[0].y);
-  context.lineTo(x + points[1].x, y + points[1].y);
-  
-  context.moveTo(x + points[1].x, y + points[1].y);
-  context.lineTo(x + points[2].x, y + points[2].y);
-  
-  context.moveTo(x + points[2].x, y + points[2].y);
-  context.lineTo(x + points[3].x, y + points[3].y);
-
-  context.moveTo(x + points[3].x, y + points[3].y);
-  context.lineTo(x + points[0].x, y + points[0].y);
+  for(var i = 0; i<block.points.length; i++){
+    o = i + 1;
+    if(o == block.points.length){
+      o = 0;
+    }
+    if(i == 0){
+    context.moveTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+    }
+    else{
+    context.lineTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+    }
+    if(i == block.points.length - 1){
+      context.lineTo(canvasX + block.points[0].x, canvasY + block.points[0].y);
+    }
+  }
+  context.closePath();
   context.stroke();
 }
+// Renders a player at the given coordinates
+
+function drawTrapDoor(block, me){
+  var canvasX = canvas.width / 2 + block.x - me.eyes.x;
+  var canvasY = canvas.height / 2 + block.y - me.eyes.y;
+  context.restore();
+  var o;
+  context.beginPath();
+  for(var i = 0; i<block.points.length; i++){
+    o = i + 1;
+    if(o == block.points.length){
+      o = 0;
+    }
+    if(i != 3){
+      if(!(i == 1 && (block.isClosed || block.isOpen))){
+        context.moveTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+        context.lineTo(canvasX + block.points[o].x, canvasY + block.points[o].y);
+      }
+    }
+  }
+  context.stroke();
+}
+
+function drawShipParts(ship,player){ 
+    context.strokeStyle = 'black';
+    drawCannonWire(ship.cannonWire1, player, ship.x, ship.y);
+    context.restore();
+  
+    //draw graple
+  /*
+  if(ship.grapple){
+      const endX = canvas.width / 2 + ship.grapple.pos.x - player.pos.x;
+      const endY = canvas.height / 2 + ship.grapple.pos.y - player.pos.y;
+      const startX = canvas.width / 2 + ship.grapple.cannon.pos.x - player.pos.x;
+      const startY = canvas.height / 2 + ship.grapple.cannon.pos.y - player.pos.y;
+      context.beginPath();
+      context.moveTo(startX, startY);
+      context.lineTo(endX,endY);
+      context.stroke();
+      context.beginPath();
+    }
+    */
+      context.strokeStyle = 'black';
+      context.lineWidth = .5;
+      //draw cannon1
+      var canvasX = canvas.width / 2 + ship.cannon1.x - player.eyes.x;
+      var canvasY = canvas.height / 2 + ship.cannon1.y - player.eyes.y;
+      context.beginPath();
+      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannon1.ammo);
+      context.fill();
+      drawPoly(ship.cannon1,player);
+      context.fillStyle = "rgb("+(ship.cannon1.loadTimer*18).toString()+", 10, 10)";
+      context.fill();
+      context.fillStyle = 'black';
+      
+      //drawLowerCannon1
+      var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyes.x;
+      var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyes.y;
+      context.beginPath();
+      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower2.ammo);
+      context.fill();
+      drawPoly(ship.cannonLower1,player);
+      context.fillStyle = "rgb("+(ship.cannonLower1.loadTimer*18).toString()+", 10, 10)";
+      context.fill();
+      context.fillStyle = 'black';
+  
+      //drawLowerCannon2
+      var canvasX = canvas.width / 2 + ship.cannonLower2.x - player.eyes.x;
+      var canvasY = canvas.height / 2 + ship.cannonLower2.y - player.eyes.y;
+      context.beginPath();
+      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower2.ammo);
+      context.fill();
+      drawPoly(ship.cannonLower2,player);
+      context.fillStyle = "rgb("+(ship.cannonLower2.loadTimer*18).toString()+", 10, 10)";
+      context.fill();
+      context.fillStyle = 'black';
+  
+      //draw ladder, mast, and trap door
+      drawTrapDoor(ship.trapDoor,player);
+      drawPoly(ship.ladder,player);
+      drawPoly(ship.mast,player);
+      context.fillStyle = '#4d0f20';
+      context.fill();
+      context.fillStyle = 'black';
+      drawPoly(ship.platform,player);
+  
+      //draw Telescope
+      var canvasX = canvas.width / 2 + ship.telescope.x - player.eyes.x;
+      var canvasY = canvas.height / 2 + ship.telescope.y - player.eyes.y;
+      context.beginPath();
+      context.arc(canvasX, canvasY, ship.telescope.radius, 0, 2*Constants.PI);
+      context.fill();
+      drawPoly(ship.telescope,player);
+  
+      //draw button
+      /*
+      var canvasX = canvas.width / 2 + ship.x + ship.button.x - player.eyes.x;
+      var canvasY = canvas.height / 2 + ship.y + ship.button.y - player.eyes.y;
+      context.beginPath();
+      context.arc(canvasX, canvasY, ship.buttonRadius, 0, 2*Constants.PI);
+      context.fill();
+      */
+}
+
+function drawShipDamage(ship,player){
+  for(var i = 0; i < ship.damages.length; i++){
+    var canvasX = canvas.width / 2 + ship.x + ship.damages[i].x - player.eyes.x;
+    var canvasY = canvas.height / 2 + ship.y + ship.damages[i].y - player.eyes.y;
+    context.beginPath();
+    context.arc(canvasX, canvasY, 10, 0, 2*Constants.PI);
+    context.fillStyle = '#34cceb';
+    context.fill();
+    context.fillStyle = 'black';
+  }
+}
+
 function renderMainMenu() {
   const t = Date.now() / 7500;
   const x = MAP_SIZE / 2 + 800 * Math.cos(t);

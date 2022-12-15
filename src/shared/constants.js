@@ -3,9 +3,10 @@ module.exports = Object.freeze({
   PLAYER_MAX_HP: 100,
   PLAYER_SPEED: 400,
   PLAYER_FIRE_COOLDOWN: 0.25,
-  BLOCK_SIZE: 100,
+  BLOCK_SIZE: 25,
   SCORE_PER_SECOND: 1,
-  PLAYER_SIZE: 50,
+  PLAYER_SIZE: 25,
+  PI : 3.14,
   
   MAP_SIZE: 3000,
   MSG_TYPES: {
