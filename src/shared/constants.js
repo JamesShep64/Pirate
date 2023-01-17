@@ -16,5 +16,11 @@ module.exports = Object.freeze({
     RELEASE : 'release',
     GAME_OVER: 'dead',
     CLICK: 'click',
+    CREATE_LOBBY: 'create_lobby',
+    LOBBY_UPDATE: 'lobby_update',
+    JOINED_LOBBY: 'joined_lobby',
+    JOINED_CREW : 'joined_crew',
+    CREATOR_JOINED_GAME : 'creator_joined_game',
+    
   },
 });

@@ -1,0 +1,33 @@
+const Constants = require('../shared/constants')
+class Lobby{
+    constructor(socket,username){
+        this.sockets = {};
+        this.crew = {};
+        this.creator = username;
+        this.id = socket.id;
+        this.crew[socket.id] = username;
+        this.sockets[socket.id] = socket;
+        this.firstUpdate = true;
+    }
+
+    addMember(socket){
+        if(Object.keys(this.sockets).length < 3){
+            this.sockets[socket.id] = socket;
+        }
+    }
+
+    addCrew(socket,username){
+        this.crew[socket.id] = username;
+    }
+
+    update(){
+        Object.keys(this.sockets).forEach(ID => {
+            const socket = this.sockets[ID];
+            socket.emit(Constants.MSG_TYPES.LOBBY_UPDATE, this.createUpdate());
+          });
+    }
+    createUpdate(){
+        return {crew : Object.values(this.crew), creator:this.creator,id : this.id}
+    }
+}
+module.exports = Lobby;

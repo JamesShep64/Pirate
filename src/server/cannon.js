@@ -7,7 +7,6 @@ const Constants = require('../shared/constants');
 class Cannon{
     constructor(ship,line,point,side){
         //position
-        this.id = 0;
         this.direction = 0;
         this.ship = ship;
         this.radius = 10;
@@ -16,6 +15,7 @@ class Cannon{
             this.line = line;
             this.lineVector = new Vector(line.points[1].x - line.points[0].x, line.points[1].y - line.points[0].y);
             this.pos = new Vector(line.points[0].x,line.points[0].y);
+            this.id = ship.id + 'a';
         }
         else{
             this.point = point;
@@ -25,6 +25,8 @@ class Cannon{
 
         }
         this.gotMoved = false;
+        //cannonBall id
+        this.cannonBallID = 1;
         //Cannon Polygons
         this.barell = new Polygon([new Vector(0, 5), new Vector(0, -5), new Vector(50, -5), new Vector(50, 5)]);
         this.shootVec = new Polygon([new Vector(1, 0)]);
@@ -40,9 +42,11 @@ class Cannon{
         if(!this.line){
             if(this.side == 1){
                 this.rotateBarellTo(2);
+                this.id = ship.id + 'b';
             }
             if(this.side == -1){
                 this.rotateBarellTo(-2 + Constants.PI);
+                this.id = ship.id + 'c';
             }
         }
         //cannonball
@@ -53,7 +57,7 @@ class Cannon{
     }
 
     update(dt){
-        this.ammoTimer += dt;
+        this.ammoTimer += dt * 3;
         if(this.ammoTimer > 36){
             if(this.ammo < 5){
                 this.ammo++;
@@ -171,7 +175,7 @@ class Cannon{
     loadCannonBall(dt){
         if(this.ammo > 0){
             if(this.loadTimer < 12){
-                this.loadTimer += dt;
+                this.loadTimer += dt * 3;
             }
         }
     }
@@ -185,7 +189,8 @@ class Cannon{
     }
 
     shootCannonBall(power){
-            this.ship.cannonBalls.push(new CannonBall(this.pos.x + this.shootVec.points[0].x * 60, this.pos.y + this.shootVec.points[0].y * 60, this.shootVec.points[0], 'a',power,this.ship));
+            this.ship.cannonBalls[this.id + this.cannonBallID.toString()] = new CannonBall(this.pos.x + this.shootVec.points[0].x * 60, this.pos.y + this.shootVec.points[0].y * 60, this.shootVec.points[0],power,this.ship,this.id + this.cannonBallID.toString());
+            this.cannonBallID++;
     }
 
     shootGrapple(){
@@ -195,6 +200,7 @@ class Cannon{
 
     serializeForUpdate(){
         return{
+            id : this.id,
             x : this.pos.x,
             y : this.pos.y,
             points : this.points,

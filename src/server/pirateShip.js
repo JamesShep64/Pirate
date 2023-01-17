@@ -13,7 +13,7 @@ const Telescope = require('./telescope');
 
 
 class PirateShip extends Polygon{
-  constructor(x, y,type) {
+  constructor(x, y,type,id) {
     if(type == 'dingy'){
       super([new Vector(-200, -25), new Vector(200, -25), new Vector(200, 0), new Vector(100, 100), new Vector(-100,100), new Vector(-200, 0)]);
       this.radius = 220;
@@ -24,6 +24,8 @@ class PirateShip extends Polygon{
       this.outer = [this.points[0], this.points[9], this.points[10], this.points[11], this.points[12], this.points[13]];
       this.radius = 220;
     }
+    //team
+    this.id = id;
     //movement
     this.pos = new Vector(x,y);
     this.netVelocity = new Vector(0,0);
@@ -78,7 +80,7 @@ class PirateShip extends Polygon{
     }
 
     //cannon Balls
-    this.cannonBalls = [];
+    this.cannonBalls = {};
     this.grapple;
 
     //orbit
@@ -122,6 +124,11 @@ class PirateShip extends Polygon{
         
       }
     }
+
+    //update cannonBalls
+    Object.keys(this.cannonBalls).forEach(id =>{
+      this.cannonBalls[id].update(dt);
+    });
     //apply torques
     this.torque = 0;
     

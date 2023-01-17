@@ -28,18 +28,18 @@ class Game {
     this.planets = [];
     this.blocks = {};
     this.blockID = 'a';
-    this.allCannonBalls = [];
+    this.teamID = 1;
+    this.seenCannonBalls = [];
+    this.seenGrapples = [];
     this.lastUpdateTime = Date.now();
     this.shouldSendUpdate = false;
     setInterval(this.update.bind(this), 1000 / 60);
   }
 
-  addPlayer(socket, username) {
+  addPlayer(socket, username,x,y) {
     this.sockets[socket.id] = socket;
     
     // Generate a position to start this player at.
-    const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
-    const y = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
     this.players[socket.id] = new PlayerObject(socket.id, username, x, y,PLAYER_SIZE, PLAYER_SIZE);
 
   }
@@ -50,7 +50,8 @@ class Game {
   }
 
   addShip(socket){
-    this.ships.push(new PirateShip(this.players[socket.id].pos.x+50,this.players[socket.id].pos.y+50,'gallion'));
+    this.ships.push(new PirateShip(this.players[socket.id].pos.x,this.players[socket.id].pos.y+50,'gallion',this.teamID.toString()));
+    this.teamID++;
   }
 
   addCursor(socket){
@@ -92,7 +93,6 @@ class Game {
     const now = Date.now();
     const dt = (now - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = now;
-    console.log(dt);
 
 
     // Update each player
@@ -104,12 +104,7 @@ class Game {
     this.ships.forEach(ship =>{  
       ship.update(dt);
     });
-    //update cannonBalls
-    this.ships.forEach(ship =>{
-      for(var i = 0; i < ship.cannonBalls.length; i++){
-        ship.cannonBalls[i].update(60/1000);
-      }
-    });
+    
     // update each block
     Object.keys(this.blocks).forEach(id => {
       this.blocks[id].update(dt);
@@ -271,35 +266,34 @@ class Game {
       });
   
       //cannon ball ship collision
-      for(var i = 0; i < ship.cannonBalls.length;i++){
+      Object.keys(ship.cannonBalls).forEach(id =>{
         this.ships.forEach(otherShip =>{
-          if(ship.cannonBalls[i]){
-            var collision = cannonBallShipCollision(ship.cannonBalls[i],otherShip);
+          if(ship.cannonBalls[id]){
+            var collision = cannonBallShipCollision(ship.cannonBalls[id],otherShip);
             if(collision){
-              ship.cannonBalls[i].explode();
-              ship.cannonBalls.splice(i,1);
+              delete ship.cannonBalls[id];
               otherShip.takeDamage(collision.u, collision.j);
             }
           }
         });
-      }
+      });
   
       //cannon ball planet collisions
-      for(var i = 0; i < ship.cannonBalls.length;i++){
-        planets.forEach(planet =>{
-          if(ship.cannonBalls[i]){
-            if(cannonBallPlanetCollision(ship.cannonBalls[i],planet)){
-              ship.cannonBalls[i].explode();
-              ship.cannonBalls.splice(i,1);
+      Object.keys(ship.cannonBalls).forEach(id =>{
+        this.planets.forEach(planet =>{
+          if(ship.cannonBalls[id]){
+            if(cannonBallPlanetCollision(ship.cannonBalls[id],planet)){
+              delete ship.cannonBalls[id];
             }
           }
         });
-      }
-          //graple planet collision
+      });
+      
+      //graple planet collision
       if(ship.grapple && !ship.grapple.gotHooked){
-        for(var i = 0; i<planets.length; i++){
-          if(ship.grapple.distanceTo(planets[i]) < 100){
-            ship.grapple.hook(planets[i]);
+        for(var i = 0; i<this.planets.length; i++){
+          if(ship.grapple.distanceTo(this.planets[i]) < 100){
+            ship.grapple.hook(this.planets[i]);
             ship.orbit();
           }
         }
@@ -307,7 +301,7 @@ class Game {
   
       //grapple ship collision
       if(ship.grapple && !ship.grapple.gotHooked){
-        ships.forEach(otherShip =>{
+        this.ships.forEach(otherShip =>{
           if(ship.grapple && !ship.grapple.gotHooked){
             if(shipPlanetCollision(otherShip,ship.grapple)){
               ship.grapple.detach();
@@ -468,15 +462,47 @@ class Game {
   //1789
   createUpdate(player, leaderboard) {
     const nearbyPlayers = Object.values(this.players).filter(
-      p => p !== player && p.distanceTo(player) <= Constants.MAP_SIZE / 2,
+      p => p !== player && p.visionDistanceTo(player) <= 1800,
+    );
+
+    const nearbyBlocks = Object.values(this.blocks).filter(
+      p =>  player.visionDistanceTo(p) <= 1800,
+    );
+
+    const nearbyShips = this.ships.filter(ship=>
+      player.visionDistanceTo(ship) <= 2089,
     );
   
+    const nearbyPlanets = this.planets.filter(ship=>
+      player.visionDistanceTo(ship) < 1849,
+    );
+
+    var nearbyCannonBalls = [];
+    this.ships.forEach(ship =>{
+      Object.values(ship.cannonBalls).forEach(ball=>{ 
+        if(player.visionDistanceTo(ball) < 1790){
+          nearbyCannonBalls.push(ball);
+        }
+      });
+    });
+    var nearbyGrapples = [];
+    this.ships.forEach(ship=>{
+      if(ship.grapple && player.visionDistanceTo(ship.grapple) < 1849)
+      nearbyGrapples.push(ship.grapple);
+    });
+
+    
     return {
       t: Date.now(),
       me: player.serializeForUpdate(),
       others: nearbyPlayers.map(p => p.serializeForUpdate()),
-      blocks: Object.keys(this.blocks).map(id => this.blocks[id].serializeForUpdate()),
-      ships: this.ships.map(ship =>ship.serializeForUpdate()),
+      blocks: nearbyBlocks.map(block=> block.serializeForUpdate()),
+      ships: nearbyShips.map(ship =>ship.serializeForUpdate()),
+      planets: nearbyPlanets.map(p => p.serializeForUpdates()),
+      cannonBalls : nearbyCannonBalls.map(ball => ball.serializeForUpdate()),
+      grapples : nearbyGrapples.map(g => g.serializeForUpdate()),
+
+
       leaderboard,
     };
   }

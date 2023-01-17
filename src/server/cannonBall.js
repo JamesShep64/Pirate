@@ -3,10 +3,10 @@ const Vector = require('./vector');
 const Polygon = require('./polygon');
 
 class CannonBall extends Polygon{
-    constructor(x,y,vec,team, power,ship){
+    constructor(x,y,vec, power,ship,id){
         super([new Vector(0,-20), new Vector(20,0), new Vector(0,20), new Vector(-20,0)]);
         this.pos = new Vector(x, y);
-        this.team = team;
+        this.id = id;
         this.power = power;
         this.radius = 20;
         //movement
@@ -46,7 +46,14 @@ class CannonBall extends Polygon{
           real.push(new Vector(this.points[i].x + this.pos.x, this.points[i].y + this.pos.y));
         }
         return real;
-      }
+    }
 
+    serializeForUpdate(){
+        return{
+            id : this.id,
+            x : this.pos.x,
+            y : this.pos.y
+        }
+    }
 }
 module.exports = CannonBall;

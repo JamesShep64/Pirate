@@ -1,6 +1,7 @@
 // Learn more about this file at:
 // https://victorzhou.com/blog/build-an-io-game-part-1/#7-client-state
 import { updateLeaderboard } from './leaderboard';
+import { updateLobbyBoard } from './lobby';
 
 // The "current" state will always be RENDER_DELAY ms behind server time.
 // This makes gameplay smoother and lag less noticeable.
@@ -14,7 +15,9 @@ export function initState() {
   gameStart = 0;
   firstServerTimestamp = 0;
 }
-
+export function processLobbyUpdate(update){
+  updateLobbyBoard(update);
+}
 export function processGameUpdate(update) {
   if (!firstServerTimestamp) {
     firstServerTimestamp = update.t;
@@ -65,11 +68,12 @@ export function getCurrentState() {
     const next = gameUpdates[base + 1];
     const ratio = (serverTime - baseUpdate.t) / (next.t - baseUpdate.t);
     return {
-      me: baseUpdate.me,
-      others: baseUpdate.others,
-      blocks: baseUpdate.blocks,
-      ships: baseUpdate.ships,
-      ratio
+      me: interpolateObject(baseUpdate.me,next.me,ratio),
+      others: interpolateObjectArray(baseUpdate.others,next.others,ratio),
+      blocks: interpolateObjectArray(baseUpdate.blocks,next.blocks,ratio),
+      ships: interpolateObjectArray(baseUpdate.ships,next.ships,ratio),
+      cannonBalls : interpolateObjectArray(baseUpdate.cannonBalls,next.cannonBalls,ratio),
+      grapples : interpolateObjectArray(baseUpdate.grapples,next.grapples,ratio),
     };
   }
 }
@@ -81,7 +85,7 @@ function interpolateObject(object1, object2, ratio) {
 
   const interpolated = {};
   Object.keys(object1).forEach(key => {
-    if (key === 'x' || key === 'y'){
+    if (key === 'x' || key === 'y' || key == 'eyesX' || key == 'eyesY'){
       interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;
     }
     else{

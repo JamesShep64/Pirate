@@ -5,7 +5,7 @@ const CannonBall = require('./cannonBall');
 
 class Grapple extends CannonBall{
     constructor(x, y, vec, ship, cannon){
-        super(x,y,vec,null, 80,ship);
+        super(x,y,vec, 80,ship);
         this.exists = true;
         this.timer = 0;
         this.cannon = cannon;
@@ -48,6 +48,12 @@ class Grapple extends CannonBall{
 
     distanceTo(player){
         return Math.sqrt((this.pos.x - player.pos.x) * (this.pos.x - player.pos.x) + (this.pos.y - player.pos.y) * (this.pos.y - player.pos.y));
+    }
+    serializeForUpdate(){
+        return{
+            x : this.pos.x,
+            y : this.pos.y
+        }
     }
 }
 module.exports = Grapple;

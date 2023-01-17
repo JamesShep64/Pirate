@@ -23,18 +23,15 @@ function setCanvasDimensions() {
 }
 
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
-
 function render() {
-  const { me, others, blocks, ships,ratio} = getCurrentState();
+  const { me, others, blocks, ships,cannonBalls,grapples} = getCurrentState();
   if (!me) {
-    console.log('a');
     return;
   }
   const now = Date.now();
-  console.log(ratio);
   lastUpdateTime = now;
   // Draw background
-  renderBackground(me.eyes.x, me.eyes.y);
+  renderBackground(me.eyesX, me.eyesY);
 
   //draw ship hulls
   
@@ -55,6 +52,14 @@ function render() {
   ships.forEach(ship =>{
     drawShipParts(ship,me);
   })
+
+  //draw CannonBalls
+  cannonBalls.forEach(ball =>{
+    drawCannonBall(ball,me);
+  });
+
+  //draw grapples
+
   
   //draw me
   drawPoly(me,me);
@@ -97,8 +102,8 @@ function renderBackground(playerX, playerY){
 
 
 function drawPoly(block, me){
-    var canvasX = canvas.width / 2 + block.x - me.eyes.x;
-    var canvasY = canvas.height / 2 + block.y - me.eyes.y;
+    var canvasX = canvas.width / 2 + block.x - me.eyesX;
+    var canvasY = canvas.height / 2 + block.y - me.eyesY;
     context.restore();
     var o;
     context.beginPath();
@@ -122,8 +127,8 @@ function drawPoly(block, me){
 }
 
 function drawCannonWire(block,me,x,y){
-  var canvasX = canvas.width / 2 + x - me.eyes.x;
-  var canvasY = canvas.height / 2 + y - me.eyes.y;
+  var canvasX = canvas.width / 2 + x - me.eyesX;
+  var canvasY = canvas.height / 2 + y - me.eyesY;
   context.restore();
   var o;
   context.beginPath();
@@ -148,8 +153,8 @@ function drawCannonWire(block,me,x,y){
 // Renders a player at the given coordinates
 
 function drawTrapDoor(block, me){
-  var canvasX = canvas.width / 2 + block.x - me.eyes.x;
-  var canvasY = canvas.height / 2 + block.y - me.eyes.y;
+  var canvasX = canvas.width / 2 + block.x - me.eyesX;
+  var canvasY = canvas.height / 2 + block.y - me.eyesY;
   context.restore();
   var o;
   context.beginPath();
@@ -190,8 +195,8 @@ function drawShipParts(ship,player){
       context.strokeStyle = 'black';
       context.lineWidth = .5;
       //draw cannon1
-      var canvasX = canvas.width / 2 + ship.cannon1.x - player.eyes.x;
-      var canvasY = canvas.height / 2 + ship.cannon1.y - player.eyes.y;
+      var canvasX = canvas.width / 2 + ship.cannon1.x - player.eyesX;
+      var canvasY = canvas.height / 2 + ship.cannon1.y - player.eyesY;
       context.beginPath();
       context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannon1.ammo);
       context.fill();
@@ -201,10 +206,10 @@ function drawShipParts(ship,player){
       context.fillStyle = 'black';
       
       //drawLowerCannon1
-      var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyes.x;
-      var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyes.y;
+      var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyesX;
+      var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyesY;
       context.beginPath();
-      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower2.ammo);
+      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower1.ammo);
       context.fill();
       drawPoly(ship.cannonLower1,player);
       context.fillStyle = "rgb("+(ship.cannonLower1.loadTimer*18).toString()+", 10, 10)";
@@ -212,8 +217,8 @@ function drawShipParts(ship,player){
       context.fillStyle = 'black';
   
       //drawLowerCannon2
-      var canvasX = canvas.width / 2 + ship.cannonLower2.x - player.eyes.x;
-      var canvasY = canvas.height / 2 + ship.cannonLower2.y - player.eyes.y;
+      var canvasX = canvas.width / 2 + ship.cannonLower2.x - player.eyesX;
+      var canvasY = canvas.height / 2 + ship.cannonLower2.y - player.eyesY;
       context.beginPath();
       context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower2.ammo);
       context.fill();
@@ -232,8 +237,8 @@ function drawShipParts(ship,player){
       drawPoly(ship.platform,player);
   
       //draw Telescope
-      var canvasX = canvas.width / 2 + ship.telescope.x - player.eyes.x;
-      var canvasY = canvas.height / 2 + ship.telescope.y - player.eyes.y;
+      var canvasX = canvas.width / 2 + ship.telescope.x - player.eyesX;
+      var canvasY = canvas.height / 2 + ship.telescope.y - player.eyesY;
       context.beginPath();
       context.arc(canvasX, canvasY, ship.telescope.radius, 0, 2*Constants.PI);
       context.fill();
@@ -251,14 +256,22 @@ function drawShipParts(ship,player){
 
 function drawShipDamage(ship,player){
   for(var i = 0; i < ship.damages.length; i++){
-    var canvasX = canvas.width / 2 + ship.x + ship.damages[i].x - player.eyes.x;
-    var canvasY = canvas.height / 2 + ship.y + ship.damages[i].y - player.eyes.y;
+    var canvasX = canvas.width / 2 + ship.x + ship.damages[i].x - player.eyesX;
+    var canvasY = canvas.height / 2 + ship.y + ship.damages[i].y - player.eyesY;
     context.beginPath();
     context.arc(canvasX, canvasY, 10, 0, 2*Constants.PI);
     context.fillStyle = '#34cceb';
     context.fill();
     context.fillStyle = 'black';
   }
+}
+
+function drawCannonBall(cannonBall,player){
+    var canvasX = canvas.width / 2 + cannonBall.x - player.eyesX;
+    var canvasY = canvas.height / 2 + cannonBall.y - player.eyesY;
+    context.beginPath();
+    context.arc(canvasX, canvasY, 10, 0, 2*Constants.PI);
+    context.fill();
 }
 
 function renderMainMenu() {

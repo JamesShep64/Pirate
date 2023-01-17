@@ -18,5 +18,12 @@ class Planet extends Polygon{
         }
         return real;
     }
+
+    serializeForUpdate(){
+        return{
+            x : this.pos.x,
+            y : this.pos.y
+        }
+    }
 }
 module.exports = Planet;

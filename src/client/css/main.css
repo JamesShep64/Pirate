@@ -41,7 +41,7 @@ button:focus {
   height: 100%;
 }
 
-#play-menu {
+#username-menu {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -55,11 +55,48 @@ button:focus {
   text-align: center;
 }
 
-#play-menu p {
+#play-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  padding: 20px 30px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 5px;
+  text-align: center;
+}
+#lobby-board {
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 10px;
+  border-radius: 5px;
+}
+#buttons{
+  display: inline-block;
+}
+#play-button{
+  font-size: 12px;
+}
+
+#play-button:hover{
+  background-color: rgb(255, 122, 122);
+}
+
+#copy-button{
+  font-size: 12px;
+}
+#copy-button:hover{
+  background-color: rgb(122, 122, 255);
+}
+
+#username-menu p {
   margin-bottom: 0;
 }
 
-#play-menu input {
+#username-menu input {
   font-size: 18px;
   outline: none;
   border: none;
@@ -69,7 +106,7 @@ button:focus {
   text-align: center;
 }
 
-#play-menu input:hover {
+#username-menu input:hover {
   outline: none;
 }
 
@@ -122,6 +159,11 @@ button:focus {
   }
 
   #play-menu {
+    padding: 10px 15px;
+    min-width: 280px;
+  }
+
+  #username-menu {
     padding: 10px 15px;
     min-width: 280px;
   }

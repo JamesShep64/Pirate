@@ -151,10 +151,10 @@ class PlayerObject extends Polygon{
     }
       
     setMove(vec){ 
-      this.rightMove.x = vec.x * 150; this.rightMove.y = vec.y * 150;
-      this.leftMove.x = vec.x * -150; this.leftMove.y = vec.y * -150;
-      this.downMove.x = vec.y * -150; this.downMove.y = vec.x * 150;
-      this.upMove.x = vec.y * 150; this.upMove.y = vec.x * -150;
+      this.rightMove.x = vec.x * 75; this.rightMove.y = vec.y * 75;
+      this.leftMove.x = vec.x * -75; this.leftMove.y = vec.y * -75;
+      this.downMove.x = vec.y * -75; this.downMove.y = vec.x * 75;
+      this.upMove.x = vec.y * 75; this.upMove.y = vec.x * -75;
       this.jump = this.upMove.unit();
    }
 
@@ -353,8 +353,8 @@ class PlayerObject extends Polygon{
         this.jumpVel.y = this.jump.y * 85;  
       }
       else{
-        this.jumpVel.x = this.jump.x * 55;
-        this.jumpVel.y = this.jump.y * 55;
+        this.jumpVel.x = this.jump.x * 105;
+        this.jumpVel.y = this.jump.y * 105;
       }
     }
   }
@@ -397,9 +397,14 @@ class PlayerObject extends Polygon{
 distanceTo(player){
   return Math.sqrt((this.pos.x - player.pos.x) * (this.pos.x - player.pos.x) + (this.pos.y - player.pos.y) * (this.pos.y - player.pos.y));
 }
+
+visionDistanceTo(player){
+  return Math.sqrt((this.eyes.x - player.pos.x) * (this.eyes.x - player.pos.x) + (this.eyes.y - player.pos.y) * (this.eyes.y - player.pos.y));
+}
 serializeForUpdate() {
   return {
-    eyes : this.eyes,
+    eyesX : this.eyes.x,
+    eyesY : this.eyes.y,
     id: this.id,
     x : this.pos.x,
     y : this.pos.y,
