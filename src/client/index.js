@@ -42,6 +42,8 @@ Promise.all([
     }
 
   copyButton.onclick = () =>{
+    copyButton.innerHTML = 'LINK COPIED!';
+    copyButton.classList.add('copied');
     navigator.clipboard.writeText(window.location.href.toString()+getID());
   };
 
@@ -62,6 +64,7 @@ function onGameOver() {
 export function joinLobby(update){
   lobbyCreator.classList.remove('hidden');
   lobbyCreator.innerHTML = 'you are in '+update.creator+'\'s lobby'; 
+  lobbyButton.innerHTML = 'JOIN LOBBY';
   joinedLobby = true;
 }
 

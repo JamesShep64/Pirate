@@ -10,6 +10,8 @@ function vectorCollision(zero1, vec1, zero2, vec2){
     return {t,u};
 } 
 function shipShipCollision(ship1, ship2){
+    if(!ship1.withinRect(ship2,ship1.radius + ship2.radius,ship1.radius + ship2.radius))
+        return false;
     if(ship1.distanceTo(ship2) > ship1.radius + ship2.radius)
         return false;
     var firstCol;

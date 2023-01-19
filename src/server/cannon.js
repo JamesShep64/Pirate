@@ -76,10 +76,18 @@ class Cannon{
             var now = new Vector(this.side * (this.ship.points[1].x - this.ship.points[0].x),this.side * (this.ship.points[1].y - this.ship.points[0].y)).unit();
             this.pos.x = this.point.x + this.ship.pos.x;
             this.pos.y = this.point.y + this.ship.pos.y;
-            this.pos.x +=  10 * perp.x;
+            this.pos.x += 10 * perp.x;
             this.pos.y += 10 * perp.y;
             this.pos.x += 10 * now.x;
             this.pos.y += 10 * now.y;
+            if(this.side == 1){
+                this.ship.spawnPoint.x = this.point.x + this.ship.pos.x;
+                this.ship.spawnPoint.y = this.point.y + this.ship.pos.y;
+                this.ship.spawnPoint.x += 30 * perp.x;
+                this.ship.spawnPoint.y += 30 * perp.y;
+                this.ship.spawnPoint.x += 30 * now.x;
+                this.ship.spawnPoint.y += 30 * now.y;
+            }
         }
         //load cannon
         if(this.isLoading){

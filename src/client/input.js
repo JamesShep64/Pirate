@@ -22,7 +22,6 @@ export function startCapturingInput() {
   })
 
   window.addEventListener('click', e => {
-    console.log(e.screenX, e.screenY);
     handleClick(e.clientX, e.clientY);
   });
   

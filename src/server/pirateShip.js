@@ -2,18 +2,17 @@
 const Vector = require('./vector');
 const Cannon = require('./cannon');
 const Polygon = require('./polygon');
-const CONSTANTS = require('../shared/constants');
 const TrapDoor = require('./trapDoor');
 const Ladder = require('./ladder');
 const Platform = require('./platform');
 const Telescope = require('./telescope');
-
-
-
+const Constants = require('../shared/constants');
+const withinRect = require('./withinRect');
+const Explosion = require('./explosion');
 
 
 class PirateShip extends Polygon{
-  constructor(x, y,type,id) {
+  constructor(x, y,type,id,planets,ships) {
     if(type == 'dingy'){
       super([new Vector(-200, -25), new Vector(200, -25), new Vector(200, 0), new Vector(100, 100), new Vector(-100,100), new Vector(-200, 0)]);
       this.radius = 220;
@@ -26,6 +25,9 @@ class PirateShip extends Polygon{
     }
     //team
     this.id = id;
+    //ships and planets
+    this.planets = planets;
+    this.ships = ships;
     //movement
     this.pos = new Vector(x,y);
     this.netVelocity = new Vector(0,0);
@@ -94,27 +96,44 @@ class PirateShip extends Polygon{
 
     //Takedamage 
     this.damages = [];
+
+    //player spawn Point
+    this.spawnPoint = new Vector(-10,-10);
+
+    //death
+    this.dead = false;
+    this.deathTimer = 0;
     
   }    
 
+  spawn(){
+    const generatePosition = () => {
+      const x = Constants.MAP_WIDTH * (Math.random() * 0.5);
+      const y = Constants.MAP_HEIGHT * (Math.random() * 0.5);
+      this.planets.forEach(planet =>{
+        if(withinRect(x,y,planet,280,280)){
+          generatePosition();
+        }
+      });
+      this.ships.forEach(planet =>{
+        if(withinRect(x,y,planet,440,440)){
+          generatePosition();
+        }
+      });
+      return {x,y};
+    }
+    this.rotateTo(0);
+    const {x,y} = generatePosition();
+    this.dead = false;
+    this.deathTimer = 0;
+    this.pos.x = x;
+    this.pos.y = y;
+    if(this.trapDoor.isClosed){
+      this.trapDoor.opening = true;
+    }
+  }
   
   update(dt) {
-    //update position
-    this.netVelocity.x = this.forwardMove.x;
-    this.netVelocity.y = this.forwardMove.y;
-    if(!this.stop){
-      this.pos.x += dt * this.netVelocity.x;
-      this.pos.y += dt * this.netVelocity.y;
-    }
-    else{
-      this.netVelocity.x = 0;
-      this.netVelocity.y = 0;
-    }
-    //update cannons and telescope
-    this.cannon1.update(dt);
-    this.cannonLower1.update(dt);
-    this.cannonLower2.update(dt);
-    this.telescope.update();
     //update grapple
     if(this.grapple){
       this.grapple.update(dt);
@@ -128,7 +147,35 @@ class PirateShip extends Polygon{
     //update cannonBalls
     Object.keys(this.cannonBalls).forEach(id =>{
       this.cannonBalls[id].update(dt);
+      if(this.cannonBalls[id].pos.x < 0 || this.cannonBalls[id].pos.x > Constants.MAP_WIDTH || this.cannonBalls[id].pos.y < 0 || this.cannonBalls[id].pos.y > Constants.MAP_HEIGHT){
+        delete this.cannonBalls[id];
+      }
     });
+
+    if(this.dead){
+      this.deathTimer += dt;
+      if(this.deathTimer > 6){
+        this.spawn();
+      }
+    }
+    else{
+    //update position
+    this.netVelocity.x = this.forwardMove.x;
+    this.netVelocity.y = this.forwardMove.y;
+    if(!this.stop){
+      this.pos.x += dt * this.netVelocity.x * Constants.VELOCITY_MULTIPLIER;
+      this.pos.y += dt * this.netVelocity.y * Constants.VELOCITY_MULTIPLIER;
+    }
+    else{
+      this.netVelocity.x = 0;
+      this.netVelocity.y = 0;
+    }
+    //update cannons and telescope
+    this.cannon1.update(dt);
+    this.cannonLower1.update(dt);
+    this.cannonLower2.update(dt);
+    this.telescope.update();
+
     //apply torques
     this.torque = 0;
     
@@ -170,6 +217,7 @@ class PirateShip extends Polygon{
     }
     //trap door update
     this.trapDoor.update(dt);
+    }
   }
   updateDisplace(){
     this.pos.x += this.displace.x;
@@ -232,18 +280,18 @@ class PirateShip extends Polygon{
         }
         else{
           this.rotate(-this.turn * rot,true);
-          this.forwardMove.x = this.tangent.x * 135;
-          this.forwardMove.y = this.tangent.y * 135;
+          this.forwardMove.x = this.tangent.x * 35;
+          this.forwardMove.y = this.tangent.y * 35;
         }
   }
 
   getIntoOrbit(rot){
     this.tangent = new Vector(-this.turn * (this.planet.pos.y - this.pos.y), this.turn * (this.planet.pos.x - this.pos.x)).unit();
-    this.rotate(-this.turn * rot/60,true);
-    this.forwardMove.x = this.tangent.x * 0;
-    this.forwardMove.y = this.tangent.y * 0;
+    this.rotate(-this.turn * rot/30,true);
+    this.forwardMove.x =  0;
+    this.forwardMove.y =  0;
     this.rotOGCounter +=1;
-    if(this.rotOGCounter == 60){
+    if(this.rotOGCounter == 30){
       this.justGrappled = false;
     }
   }
@@ -288,6 +336,13 @@ class PirateShip extends Polygon{
   distanceTo(player){
   return Math.sqrt((this.pos.x - player.pos.x) * (this.pos.x - player.pos.x) + (this.pos.y - player.pos.y) * (this.pos.y - player.pos.y));
   }
+
+  withinRect(other,width,height){
+    if(other.pos.x < this.pos.x + width && other.pos.x > this.pos.x - width && other.pos.y < this.pos.y + height && other.pos.y > this.pos.y - height)
+      return true;
+    return false;
+  }  
+  
   rotate(angle,doObjects){
       var cos = Math.cos(angle);
       var sin = Math.sin(angle);
@@ -363,14 +418,20 @@ class PirateShip extends Polygon{
       }
     }
   }
+  
+  rotateTo(angle){
+    angle %= 2 * Constants.PI;
+    this.rotate(angle - this.direction);
+  }
 
-  takeDamage(u,j){
+  takeDamage(u,j,power){
     var o = j + 1;
     if(j == this.points.length - 1){
       o = 0;
     }
     var no = false;
-    var damage = new Vector(this.points[j].x +(this.points[o].x - this.points[j].x) * u, this.points[j].y + (this.points[o].y - this.points[j].y) * u);
+    var surface = new Vector(this.points[o].x - this.points[j].x, this.points[o].y - this.points[j].y);
+    var damage = new Vector(this.points[j].x +(surface.x) * u, this.points[j].y + (surface.y) * u);
     for(var i = 0; i < this.damages.length; i++){
       if(damage.x < this.damages[i].x + 10 && damage.x > this.damages[i].x - 10 && damage.y < this.damages[i].y + 10 && damage.y > this.damages[i].y - 10){
         no = true;
@@ -378,6 +439,8 @@ class PirateShip extends Polygon{
     }
     if(!no){
       this.damages.push(damage);
+      //this.explosions[this.explosionID] = new Explosion(this.pos.x + damage.x, this.pos.y + damage.y,power,surface,this,this.explosionID);
+      this.explosionID += 'a';
     }
   }
 
@@ -393,7 +456,7 @@ class PirateShip extends Polygon{
       cannonLower1 : this.cannonLower1.serializeForUpdate(),
       cannonLower2 : this.cannonLower2.serializeForUpdate(),
       trapDoor : this.trapDoor.serializeForUpdate(),
-      cannonWire1 : this.cannonWire1,
+      cannonWire1 : this.cannonWire1.points,
       ladder : this.ladder.serializeForUpdate(),
       mast : this.mast.serializeForUpdate(),
       platform : this.platform.serializeForUpdate(),

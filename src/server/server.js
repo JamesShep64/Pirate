@@ -49,7 +49,7 @@ io.on('connection', socket => {
   socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
   socket.on(Constants.MSG_TYPES.PRESS, handlePress);
   socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
-  socket.on(Constants.MSG_TYPES.CLICK, handleClick);
+  //socket.on(Constants.MSG_TYPES.CLICK, handleClick);
   socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
   socket.on('disconnect', onDisconnect);
 });
@@ -58,14 +58,7 @@ io.on('connection', socket => {
 const game = new Game();
 var lobbies = {};
 function joinGame() {
-  const x = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
-  const y = Constants.MAP_SIZE * (0.25 + Math.random() * 0.5);
-  Object.keys(lobbies[this.id].crew).forEach(id =>{
-    game.addPlayer(lobbies[this.id].sockets[id],lobbies[this.id].crew[id],x,y);
-    lobbies[this.id].sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
-  });
-  game.addShip(this);
-  game.addCursor(this);
+  game.addCrew(lobbies[this.id]);
 }
 
 function createLobby(creator){

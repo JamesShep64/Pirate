@@ -15,13 +15,14 @@ class Grapple extends CannonBall{
         this.start = new Vector(0,0);
         this.forwardMove = new Vector(0,0);
         this.ship = ship;
+        this.shootMult = 1.5;
     }
 
     update(dt){
         if(!this.gotHooked){
             super.update(dt);
             this.timer += dt;
-            if(this.timer > 12){
+            if(this.timer > 1.5){
                 this.exists = false;
                 delete this;
             }
@@ -52,7 +53,9 @@ class Grapple extends CannonBall{
     serializeForUpdate(){
         return{
             x : this.pos.x,
-            y : this.pos.y
+            y : this.pos.y,
+            xEnd : this.cannon.pos.x,
+            yEnd : this.cannon.pos.y,
         }
     }
 }

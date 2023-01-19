@@ -10,6 +10,8 @@ function vectorCollision(zero1, vec1, zero2, vec2){
     return {t,u};
 }
 function playerLadderCollision(block1, block2){
+    if(!block1.withinRect(block2.ship,block1.radius + block2.ship.radius,block1.radius + block2.ship.radius))
+        return false;
     for(var i = 0; i < 4; i++){
         var zero1 = block1.pos;
         var vec1 = block1.points[i];

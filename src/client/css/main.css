@@ -61,6 +61,8 @@ button:focus {
   left: 50%;
   transform: translateY(-50%) translateX(-50%);
   padding: 20px 30px;
+  width: 275px;
+  height: 175px;
   background-color: white;
   display: flex;
   flex-direction: column;
@@ -91,7 +93,12 @@ button:focus {
 #copy-button:hover{
   background-color: rgb(122, 122, 255);
 }
-
+#copy-button:active,#copy-button:hover.clicked{
+  background-color: rgb(120, 229, 125);
+}
+#copied{
+  background-color: rgb(120, 229, 125);
+}
 #username-menu p {
   margin-bottom: 0;
 }

@@ -9,6 +9,7 @@ class Planet extends Polygon{
         this.radius = 60;
         this.repeats1 = [2,3];
         this.repeats2 = [0,1];
+        this.floor = [];
     }
 
     get realPoints(){
@@ -22,7 +23,8 @@ class Planet extends Polygon{
     serializeForUpdate(){
         return{
             x : this.pos.x,
-            y : this.pos.y
+            y : this.pos.y,
+            points : this.points,
         }
     }
 }

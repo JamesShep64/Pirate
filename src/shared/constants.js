@@ -7,8 +7,11 @@ module.exports = Object.freeze({
   SCORE_PER_SECOND: 1,
   PLAYER_SIZE: 25,
   PI : 3.14,
-  
+  VELOCITY_MULTIPLIER: 2.5,
   MAP_SIZE: 3000,
+  MAP_HEIGHT : 3000,
+  MAP_WIDTH : 6000,
+
   MSG_TYPES: {
     JOIN_GAME: 'join_game',
     GAME_UPDATE: 'update',

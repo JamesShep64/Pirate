@@ -12,6 +12,7 @@ var lastUpdateTime  = 0;
 // Get the canvas graphics context
 const canvas = document.getElementById('game-canvas');
 const context = canvas.getContext('2d');
+context.save();
 setCanvasDimensions();
 
 function setCanvasDimensions() {
@@ -24,7 +25,7 @@ function setCanvasDimensions() {
 
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
 function render() {
-  const { me, others, blocks, ships,cannonBalls,grapples} = getCurrentState();
+  const { me, others, blocks, ships,cannonBalls,grapples,planets} = getCurrentState();
   if (!me) {
     return;
   }
@@ -59,16 +60,31 @@ function render() {
   });
 
   //draw grapples
-
+  grapples.forEach(grapple =>{
+    const endX = canvas.width / 2 + grapple.x - me.x;
+    const endY = canvas.height / 2 + grapple.y - me.y;
+    const startX = canvas.width / 2 + grapple.xEnd - me.x;
+    const startY = canvas.height / 2 + grapple.yEnd - me.y;
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.lineTo(endX,endY);
+    context.lineWidth = 4;
+    context.stroke();
+    context.lineWidth = .5;
+    context.restore();
+  });
   
   //draw me
-  drawPoly(me,me);
+  if(!me.dead)
+    drawPoly(me,me);
   //draw others
-  others.forEach(player => drawPoly(player,me));
+  others.filter(player => !player.dead,).forEach(player => drawPoly(player,me));
 
   //draw blocks
   blocks.forEach(block => drawPoly(block,me));
-  
+
+  //draw planets
+  planets.forEach(planet => drawPoly(planet,me));
 }
 
 function renderBackground(playerX, playerY){
@@ -96,6 +112,9 @@ function renderBackground(playerX, playerY){
       }
     }
   }
+  context.lineWidth = 3;
+  context.strokeRect(canvas.width / 2 - playerX, canvas.height / 2 - playerY, Constants.MAP_WIDTH, Constants.MAP_HEIGHT);
+  context.lineWidth = .5;
   context.restore();
   context.fillStyle = 'black';
 }
@@ -126,25 +145,25 @@ function drawPoly(block, me){
     context.stroke();
 }
 
-function drawCannonWire(block,me,x,y){
+function drawCannonWire(points,me,x,y){
   var canvasX = canvas.width / 2 + x - me.eyesX;
   var canvasY = canvas.height / 2 + y - me.eyesY;
   context.restore();
   var o;
   context.beginPath();
-  for(var i = 0; i<block.points.length; i++){
+  for(var i = 0; i<points.length; i++){
     o = i + 1;
-    if(o == block.points.length){
+    if(o == points.length){
       o = 0;
     }
     if(i == 0){
-    context.moveTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+    context.moveTo(canvasX + points[i].x, canvasY + points[i].y);
     }
     else{
-    context.lineTo(canvasX + block.points[i].x, canvasY + block.points[i].y);
+    context.lineTo(canvasX + points[i].x, canvasY + points[i].y);
     }
-    if(i == block.points.length - 1){
-      context.lineTo(canvasX + block.points[0].x, canvasY + block.points[0].y);
+    if(i == points.length - 1){
+      context.lineTo(canvasX + points[0].x, canvasY + points[0].y);
     }
   }
   context.closePath();

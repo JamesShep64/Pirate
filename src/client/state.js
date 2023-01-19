@@ -71,9 +71,10 @@ export function getCurrentState() {
       me: interpolateObject(baseUpdate.me,next.me,ratio),
       others: interpolateObjectArray(baseUpdate.others,next.others,ratio),
       blocks: interpolateObjectArray(baseUpdate.blocks,next.blocks,ratio),
-      ships: interpolateObjectArray(baseUpdate.ships,next.ships,ratio),
+      ships: interpolateShips(baseUpdate.ships,next.ships,ratio),
       cannonBalls : interpolateObjectArray(baseUpdate.cannonBalls,next.cannonBalls,ratio),
       grapples : interpolateObjectArray(baseUpdate.grapples,next.grapples,ratio),
+      planets : baseUpdate.planets,
     };
   }
 }
@@ -85,14 +86,110 @@ function interpolateObject(object1, object2, ratio) {
 
   const interpolated = {};
   Object.keys(object1).forEach(key => {
-    if (key === 'x' || key === 'y' || key == 'eyesX' || key == 'eyesY'){
+    if (key === 'x' || key === 'y' || key == 'eyesX' || key == 'eyesY' || key =='xEnd' || key == 'yEnd'){
       interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;
+    }
+    else if(key == 'points'){
+      interpolated[key] = object1[key];
+      for(var i = 0; i<object1[key].length;i++){
+        interpolated[key][i].x = object1[key][i].x + (object2[key][i].x - object1[key][i].x) * ratio;
+        interpolated[key][i].y = object1[key][i].y + (object2[key][i].y - object1[key][i].y) * ratio;
+      }
     }
     else{
       interpolated[key] = object1[key];
     }
   });
   return interpolated;
+}
+
+function interpolateShip(object1, object2, ratio){
+  if (!object2) {
+    return object1;
+  }
+
+  const interpolated = {};
+
+  Object.keys(object1).forEach(key =>{
+    if (key === 'x' || key === 'y'){
+      interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;
+    }
+    
+    else if(key == 'cannonWire1'){
+      interpolated[key] = object1[key];
+      for(var i = 0; i<object1[key].length;i++){
+        interpolated[key][i].x = object1[key][i].x + (object2[key][i].x - object1[key][i].x) * ratio;
+        interpolated[key][i].y = object1[key][i].y + (object2[key][i].y - object1[key][i].y) * ratio;
+      }
+    }
+    
+    
+    else if(key == 'points'){
+      interpolated[key] = object1[key];
+      for(var i = 0; i<object1[key].length;i++){
+        interpolated[key][i].x = object1[key][i].x + (object2[key][i].x - object1[key][i].x) * ratio;
+        interpolated[key][i].y = object1[key][i].y + (object2[key][i].y - object1[key][i].y) * ratio;
+      }
+    }
+    else if(key == 'cannon1'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+    }
+    else if(key == 'cannonLower1'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+
+    }
+    else if(key == 'cannonLower2'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+
+    }
+    else if(key == 'ladder'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+      for(var i = 0; i<object1[key]['points'].length;i++){
+        interpolated[key]['points'][i].x = object1[key]['points'][i].x + (object2[key]['points'][i].x - object1[key]['points'][i].x) * ratio;
+        interpolated[key]['points'][i].y = object1[key]['points'][i].y + (object2[key]['points'][i].y - object1[key]['points'][i].y) * ratio;
+      }
+
+    }
+    else if(key == 'mast'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+      for(var i = 0; i<object1[key]['points'].length;i++){
+        interpolated[key]['points'][i].x = object1[key]['points'][i].x + (object2[key]['points'][i].x - object1[key]['points'][i].x) * ratio;
+        interpolated[key]['points'][i].y = object1[key]['points'][i].y + (object2[key]['points'][i].y - object1[key]['points'][i].y) * ratio;
+      }
+    }
+    else if(key == 'platform'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+      for(var i = 0; i<object1[key]['points'].length;i++){
+        interpolated[key]['points'][i].x = object1[key]['points'][i].x + (object2[key]['points'][i].x - object1[key]['points'][i].x) * ratio;
+        interpolated[key]['points'][i].y = object1[key]['points'][i].y + (object2[key]['points'][i].y - object1[key]['points'][i].y) * ratio;
+      }
+    }
+    else if(key == 'telescope'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+    }
+    else{
+      interpolated[key] = object1[key];
+    }
+  });
+  return interpolated;
+}
+
+function interpolateShips(objects1, objects2, ratio){
+  return objects1.map(o => interpolateShip(o, objects2.find(o2 => o.id === o2.id), ratio));
 }
 
 function interpolateObjectArray(objects1, objects2, ratio) {

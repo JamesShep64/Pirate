@@ -10,6 +10,8 @@ function vectorCollision(zero1, vec1, zero2, vec2){
     return {t,u};
 }
 function blockCollision(block1, block2){
+    if(!block1.withinRect(block2,block1.radius + block2.radius,block1.radius + block2.radius))
+        return false;
     if(block1.distanceTo(block2)>block1.radius + block2.radius)
         return false;
     var firstCol;

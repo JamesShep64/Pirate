@@ -12,12 +12,13 @@ const Planet = require('./planet');
 const Cannon = require('./cannon');
 const CannonBall = require('./cannonBall');
 const trapDoorCollision = require('./trapDoorCollision');
-const { BLOCK_SIZE, PLAYER_SIZE } = require('../shared/constants');
+const { BLOCK_SIZE, PLAYER_SIZE, MAP_HEIGHT } = require('../shared/constants');
 const playerLadderCollision = require('./playerLadderCollision');
 const shipPlanetCollision = require('./shipPlanetCollision');
 const cannonBallShipCollision = require('./cannonBallShipCollision');
 const cannonBallPlanetCollision = require('./cannonBallPlanetCollision');
 const shipShipCollision = require('./shipShipCollision');
+const withinRect = require('./withinRect');
 
 class Game {
   constructor() {
@@ -32,16 +33,35 @@ class Game {
     this.seenCannonBalls = [];
     this.seenGrapples = [];
     this.lastUpdateTime = Date.now();
-    this.shouldSendUpdate = false;
-    setInterval(this.update.bind(this), 1000 / 60);
+    this.shouldSendUpdate = true;
+    this.createMap();
+    setInterval(this.update.bind(this), 1000 / 30);
   }
 
-  addPlayer(socket, username,x,y) {
-    this.sockets[socket.id] = socket;
-    
-    // Generate a position to start this player at.
-    this.players[socket.id] = new PlayerObject(socket.id, username, x, y,PLAYER_SIZE, PLAYER_SIZE);
-
+  addCrew(lobby){
+     const generatePosition = () => {
+      const x = Constants.MAP_WIDTH * (Math.random() * 0.5);
+      const y = Constants.MAP_HEIGHT * (Math.random() * 0.5);
+      this.planets.forEach(planet =>{
+        if(withinRect(x,y,planet,280,280)){
+          generatePosition();
+        }
+      });
+      this.ships.forEach(planet =>{
+        if(withinRect(x,y,planet,440,440)){
+          generatePosition();
+        }
+      });
+      return {x,y};
+    }
+    const {x,y} = generatePosition();
+    this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),this.planets,this.ships));
+    this.teamID++;
+    Object.keys(lobby.crew).forEach(id =>{
+    this.sockets[id] = lobby.sockets[id];
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1]);
+    lobby.sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+  });
   }
 
   removePlayer(socket) {
@@ -49,20 +69,9 @@ class Game {
     delete this.players[socket.id];
   }
 
-  addShip(socket){
-    this.ships.push(new PirateShip(this.players[socket.id].pos.x,this.players[socket.id].pos.y+50,'gallion',this.teamID.toString()));
-    this.teamID++;
-  }
-
-  addCursor(socket){
-    this.cursors[socket.id] = new Cursor(socket.id, 0, 0);
-  }
   handlePress(socket,key){
     if(this.players[socket.id]){
       this.players[socket.id].handlePress(key);
-    }
-    if(this.cursors[socket.id]){
-      this.cursors[socket.id].handlePress(key);
     }
   }
 
@@ -74,7 +83,6 @@ class Game {
 
   handleClick(socket,click){
     var c = this.cursors[socket.id];
-    c.update(click.x, click.y);
     const x = click.x + this.players[socket.id].pos.x - click.canvasWidth/2;
     const y = click.y + this.players[socket.id].pos.y - click.canvasHeight/2;
     this.ships.forEach(ship=>{
@@ -88,6 +96,16 @@ class Game {
     });
   }
 
+  createMap(){
+    for(var x =0; x < Constants.MAP_WIDTH; x+=900){
+      for(var y =400; y < Constants.MAP_HEIGHT; y+=900){
+        var xPos = (.5 - Math.random()) * 600 + x;
+        var yPos = (.5 - Math.random()) * 600 + y;
+        this.planets.push(new Planet(xPos,yPos));
+      }
+    }
+  }
+
   update() {
     // Calculate time elapsed
     const now = Date.now();
@@ -98,10 +116,17 @@ class Game {
     // Update each player
     Object.keys(this.players).forEach(playerID => {
       const player = this.players[playerID];
+      if(player.pos.x < 0 || player.pos.x > Constants.MAP_WIDTH || player.pos.y < 0 || player.pos.y > MAP_HEIGHT){
+        player.dead = true;
+      }
      player.update(dt);
     });
     //update Ships
-    this.ships.forEach(ship =>{  
+    this.ships.forEach(ship =>{ 
+      if(ship.pos.x < 0 || ship.pos.x > Constants.MAP_WIDTH || ship.pos.y < 0 || ship.pos.y > MAP_HEIGHT){
+        ship.dead = true;
+      } 
+      ship.ships = this.ships;
       ship.update(dt);
     });
     
@@ -109,94 +134,93 @@ class Game {
     Object.keys(this.blocks).forEach(id => {
       this.blocks[id].update(dt);
     });
-
-    this.ships.forEach(ship =>{
-      //ship planet collision
-      for(var i = 0; i < this.planets.length; i++){
-        var happened = shipPlanetCollision(ship, this.planets[i]);
-        if(happened){
-          var {push} = happened;
-          ship.displace.add(push);
-        }
-      }
-  
     
+    Object.values(this.players).filter(player => !player.dead,).forEach(player => {
+      this.ships.filter(player => !player.dead,).forEach(ship =>{
       //player ship Collision
-      Object.keys(this.players).forEach(id => {
-      var {push,vec2, i,happened} = blockShipCollision(this.players[id],ship);
+      var {push,vec2, i,happened} = blockShipCollision(player,ship);
       if(happened){  
         if(vec2){
-          this.players[id].rotateTo(ship.direction);
-          this.players[id].setMove(vec2);
-          this.players[id].applyFriction(ship.netVelocity);
-          this.players[id].turnGravity(false);
-          ship.hasPlayers[id] = this.players[id]; 
-          this.players[id].isCol = true;
-          this.players[id].didCol = true;
+          player.rotateTo(ship.direction);
+          player.setMove(vec2);
+          player.applyFriction(ship.netVelocity);
+          player.turnGravity(false);
+          ship.hasPlayers[player.id] = player; 
+          player.isCol = true;
+          player.didCol = true;
+          player.withinShip = true;
+          player.shipWithin = ship;
           }
-          this.players[id].displace.add(push);
+          player.displace.add(push);
         }
           //push after collision
       else{
-        delete ship.hasPlayers[id];
+        delete ship.hasPlayers[player.id];
       }
   
       //player trap door Collision
-      var happened = trapDoorCollision(this.players[id],ship.trapDoor);
+      var happened = trapDoorCollision(player,ship.trapDoor);
       if(happened){
         var {push,vec2} = happened;
         if(vec2){
-          this.players[id].rotateTo(ship.direction);
-          this.players[id].setMove(vec2);
-          this.players[id].applyFriction(ship.netVelocity);
-          this.players[id].turnGravity(false);
-          ship.hasPlayers[id] = this.players[id]; 
-          this.players[id].isCol = true;
-          this.players[id].didCol = true;
+          player.rotateTo(ship.direction);
+          player.setMove(vec2);
+          player.applyFriction(ship.netVelocity);
+          player.turnGravity(false);
+          ship.hasPlayers[player.id] = player; 
+          player.isCol = true;
+          player.didCol = true;
+          player.withinShip = true;
+          player.shipWithin = ship;  
         }
-        this.players[id].displace.add(push);
+        player.displace.add(push);
       }
   
       //player platform Collision
-      if(!this.players[id].movedOnLadder){
-        var happened = trapDoorCollision(this.players[id],ship.platform);
+      if(!player.movedOnLadder){
+        var happened = trapDoorCollision(player,ship.platform);
         if(happened){  
           var {push, vec2} = happened;
           if(vec2){
-            this.players[id].setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
-            this.players[id].applyFriction(ship.netVelocity);
-            this.players[id].rotateTo(ship.direction);
-            this.players[id].turnGravity(false);
-            ship.hasPlayers[id] = this.players[id];
-            this.players[id].isCol = true;
-            this.players[id].didCol = true;          
+            player.setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
+            player.applyFriction(ship.netVelocity);
+            player.rotateTo(ship.direction);
+            player.turnGravity(false);
+            ship.hasPlayers[player.id] = player;
+            player.isCol = true;
+            player.didCol = true; 
+            player.withinShip = true;
+            player.shipWithin = ship;           
           }
-          this.players[id].displace.add(push);
+          player.displace.add(push);
         }
       }
       
+      if(player.shipWithin == ship && player.distanceTo(ship) < ship.radius){
+        player.didWithinShip = true;
+      }
   
       //player Cannon interaction
-      if(this.players[id].isGrabing && (!ship.cannon1.holder != this.players[id] && (this.players[id].holding == ship.cannon1 || !this.players[id].holding)))
-          ship.cannon1.move(this.players[id]);
+      if(player.isGrabing && (!ship.cannon1.holder != player && (player.holding == ship.cannon1 || !player.holding)))
+          ship.cannon1.move(player);
   
-        if(this.players[id].isTrying && (!ship.cannon1.user != this.players[id] && (this.players[id].using == ship.cannon1 || !this.players[id].using)))
-          ship.cannon1.use(this.players[id]);
+        if(player.isTrying && (!ship.cannon1.user != player && (player.using == ship.cannon1 || !player.using)))
+          ship.cannon1.use(player);
   
-        if(this.players[id].isTrying && (!ship.cannonLower1.user != this.players[id] && (this.players[id].using == ship.cannonLower1 || !this.players[id].using)))
-        ship.cannonLower1.use(this.players[id]);
+        if(player.isTrying && (!ship.cannonLower1.user != player && (player.using == ship.cannonLower1 || !player.using)))
+        ship.cannonLower1.use(player);
   
-        if(this.players[id].isTrying && (!ship.cannonLower2.user != this.players[id] && (this.players[id].using == ship.cannonLower2 || !this.players[id].using)))
-        ship.cannonLower2.use(this.players[id]);
+        if(player.isTrying && (!ship.cannonLower2.user != player && (player.using == ship.cannonLower2 || !player.using)))
+        ship.cannonLower2.use(player);
   
-        if(this.players[id].isTrying && (!ship.cannonLower2.user != this.players[id] && (this.players[id].using == ship.cannonLower2 || !this.players[id].using)))
-        ship.cannonLower2.use(this.players[id]);
+        if(player.isTrying && (!ship.cannonLower2.user != player && (player.using == ship.cannonLower2 || !player.using)))
+        ship.cannonLower2.use(player);
         
-        if(this.players[id].isTrying && (!ship.telescope.user != this.players[id] && (this.players[id].using == ship.cannonLower2 || !this.players[id].using)))
-        ship.telescope.use(this.players[id]);
+        if(player.isTrying && (!ship.telescope.user != player && (player.using == ship.cannonLower2 || !player.using)))
+        ship.telescope.use(player);
   
-        if(this.players[id].isTrying && ((this.players[id].pos.x - (ship.pos.x + ship.button.x)) * (this.players[id].pos.x - (ship.pos.x + ship.button.x)) + 
-        (this.players[id].pos.y - (ship.pos.y + ship.button.y)) * (this.players[id].pos.y - (ship.pos.y + ship.button.y))) < ((ship.buttonRadius + this.players[id].radius) * (ship.buttonRadius + this.players[id].radius))/2){
+        if(player.isTrying && ((player.pos.x - (ship.pos.x + ship.button.x)) * (player.pos.x - (ship.pos.x + ship.button.x)) + 
+        (player.pos.y - (ship.pos.y + ship.button.y)) * (player.pos.y - (ship.pos.y + ship.button.y))) < ((ship.buttonRadius + player.radius) * (ship.buttonRadius + player.radius))/2){
           if(ship.trapDoor.isOpen){
             ship.trapDoor.closing = true;
           }
@@ -205,29 +229,107 @@ class Game {
   
           }
         }
-      //this.players[id] ladder interaction
-      var happened = playerLadderCollision(this.players[id],ship.ladder);
+      //player ladder interaction
+      var happened = playerLadderCollision(player,ship.ladder);
       if(happened){  
-          this.players[id].setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
-          this.players[id].applyFriction(ship.ladder.ship.netVelocity,true);
-          this.players[id].rotateTo(ship.ladder.ship.direction);
-          this.players[id].onLadder = true;
-          this.players[id].didOnLadder = true;
-          ship.hasPlayers[id] = this.players[id]; 
+          player.setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
+          player.applyFriction(ship.ladder.ship.netVelocity,true);
+          player.rotateTo(ship.ladder.ship.direction);
+          player.onLadder = true;
+          player.didOnLadder = true;
+          ship.hasPlayers[player.id] = player; 
         }
         else{
-          var happened = playerLadderCollision(this.players[id],ship.mast);
+          var happened = playerLadderCollision(player,ship.mast);
           if(happened){  
-            this.players[id].setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
-            this.players[id].applyFriction(ship.ladder.ship.netVelocity,true);
-            this.players[id].rotateTo(ship.ladder.ship.direction);
-            this.players[id].onLadder = true;
-            this.players[id].didOnLadder = true;
-            ship.hasPlayers[id] = this.players[id]; 
+            player.setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
+            player.applyFriction(ship.ladder.ship.netVelocity,true);
+            player.rotateTo(ship.ladder.ship.direction);
+            player.onLadder = true;
+            player.didOnLadder = true;
+            ship.hasPlayers[player.id] = player; 
             }
         }
+    });
+      //PLAYER LADDER FIX
+      if(!player.didOnLadder){
+        player.onLadder = false;
+      }
+      player.didOnLadder = false;
+
+      //player within ship fix
+      if(!player.didWithinShip){
+        player.withinShip = false;
+        player.shipWithin = null;
+        player.setMove(new Vector(1,0));
+        player.rotateTo(0);
+      }
+      player.didWithinShip = false;
+
+      //player block collision
+      Object.keys(this.blocks).forEach(id =>{
+        var happened = blockCollision(player,this.blocks[id]);
+        if(happened){  
+          if(this.blocks[id].holder == player){
+            player.drop();
+          }
+          color = 'red';
+          var {push, vec2} = happened;
+          if(vec2){
+            player.setMove(vec2);
+            player.applyFriction(this.blocks[id].netVelocity);
+            player.rotateTo(this.blocks[id].direction);
+            player.turnGravity(false);
+            player.onTop = true;
+            this.blocks[id].hasTop[player.id] = player;
+            player.isCol = true;
+            player.didCol = true;
+          }
+          else{
+            if(this.blocks[id].hasTop[player.id]){
+              player.onTop = false;
+              delete this.blocks[id].hasTop[player.id];
+            }
+            if(player.isGrabing && !player.isHolding){
+              player.grab(blocks[id]);
+            }
+          }
+          player.displace.add(push);
+        }
+        else{
+          this.blocks[id].wasJustHeld = false;
+          color = 'black';
+          if(this.blocks[id].hasTop[player.id]){
+            player.onTop = false;
+            delete this.blocks[id].hasTop[player.id];
+          }
+        }
+      });  
+
+      //PLAYER COLLISION FIX
+      if(!player.didCol){
+        player.isCol = false;
+      }
+      player.didCol = false;
+
+      //player planet collision
+      this.planets.forEach(planet =>{
+        var happened = blockCollision(player,planet);
+        if(happened){
+          var {push} = happened;
+          player.displace.add(push);
+        }
       });
-  
+    });
+    this.ships.filter(player => !player.dead,).forEach(ship =>{
+      //ship planet collision
+      for(var i = 0; i < this.planets.length; i++){
+        var happened = shipPlanetCollision(ship, this.planets[i]);
+        if(happened){
+          var {push} = happened;
+          ship.displace.add(push);
+        }
+      }
       //block Ship Collision
       Object.keys(this.blocks).forEach(id =>{
         var {push,vec2,happened} = blockShipCollision(this.blocks[id],ship);
@@ -267,7 +369,7 @@ class Game {
   
       //cannon ball ship collision
       Object.keys(ship.cannonBalls).forEach(id =>{
-        this.ships.forEach(otherShip =>{
+        this.ships.filter(player => !player.dead,).forEach(otherShip =>{
           if(ship.cannonBalls[id]){
             var collision = cannonBallShipCollision(ship.cannonBalls[id],otherShip);
             if(collision){
@@ -292,16 +394,21 @@ class Game {
       //graple planet collision
       if(ship.grapple && !ship.grapple.gotHooked){
         for(var i = 0; i<this.planets.length; i++){
-          if(ship.grapple.distanceTo(this.planets[i]) < 100){
-            ship.grapple.hook(this.planets[i]);
-            ship.orbit();
+          if(ship.grapple){
+            if(ship.grapple.distanceTo(this.planets[i]) < 100){
+              ship.grapple.hook(this.planets[i]);
+              ship.orbit();
+            }
+          }
+          else{
+            break;
           }
         }
       }
   
       //grapple ship collision
       if(ship.grapple && !ship.grapple.gotHooked){
-        this.ships.forEach(otherShip =>{
+        this.ships.filter(player => !player.dead,).forEach(otherShip =>{
           if(ship.grapple && !ship.grapple.gotHooked){
             if(shipPlanetCollision(otherShip,ship.grapple)){
               ship.grapple.detach();
@@ -320,58 +427,6 @@ class Game {
         }
       }
     });
-  
-    //PLAYER COLLISION FIX
-    Object.keys(this.players).forEach(id =>{
-      if(!this.players[id].didCol){
-        this.players[id].isCol = false;
-      }
-      this.players[id].didCol = false;
-    
-      if(!this.players[id].didOnLadder){
-        this.players[id].onLadder = false;
-      }
-      this.players[id].didOnLadder = false;
-    });
-
-    //player block collision
-    Object.keys(this.players).forEach(id =>{
-      Object.keys(this.blocks).forEach(id2 =>{
-        if(this.blocks[id2] != this.players[id]){
-          var happened = blockCollision(this.players[id],this.blocks[id2]);
-          if(happened){  
-            color = 'red';
-            var {push, vec2} = happened;
-            if(vec2){
-              this.players[id].setMove(vec2);
-              this.players[id].applyFriction(this.blocks[id2].netVelocity);
-              this.players[id].rotateTo(this.blocks[id2].direction);
-              this.players[id].turnGravity(false);
-              this.players[id].onTop = true;
-              this.blocks[id2].hasTop[id] = this.players[id];
-            }
-            else{
-              delete this.blocks[id2].hasTop[id];
-              if(this.players[id].isGrabing && !this.players[id].isHolding){
-                this.players[id].grab(this.blocks[id2]);
-              }
-            }
-            if(this.blocks[id2].wasJustHeld){
-              push.x *= -1;
-              push.y *= -1;
-              this.blocks[id2].displace.add(push);
-            }
-            else{this.players[id].displace.add(push)};
-          }
-          else{
-            this.blocks[id2].wasJustHeld = false;
-            color = 'black';
-            delete this.blocks[id2].hasTop[id];
-          }
-        }
-      });
-    });
-
     //block block Collision
     var comboCol = {};
     Object.keys(this.blocks).forEach(id => {
@@ -427,10 +482,10 @@ class Game {
       });
     });
     //update Displacments
-    Object.keys(this.players).forEach(id =>{
-      this.players[id].updateDisplace();
+    Object.values(this.players).filter(player => !player.dead,).forEach(player =>{
+      player.updateDisplace();
     });
-    this.ships.forEach(ship =>{
+    this.ships.filter(player => !player.dead,).forEach(ship =>{
       ship.updateDisplace();
     });
     Object.keys(this.blocks).forEach(id =>{
@@ -446,7 +501,7 @@ class Game {
         const player = this.players[playerID];
         socket.emit(Constants.MSG_TYPES.GAME_UPDATE, this.createUpdate(player, leaderboard));
       });
-      this.shouldSendUpdate = false;
+      this.shouldSendUpdate = true;
     } else {
       this.shouldSendUpdate = true;
     }
@@ -462,47 +517,43 @@ class Game {
   //1789
   createUpdate(player, leaderboard) {
     const nearbyPlayers = Object.values(this.players).filter(
-      p => p !== player && p.visionDistanceTo(player) <= 1800,
+      p => p !== player && player.withinVisionRect(p,1800,1800),
     );
 
     const nearbyBlocks = Object.values(this.blocks).filter(
-      p =>  player.visionDistanceTo(p) <= 1800,
+      p =>  player.withinVisionRect(p,1800,1800),
     );
 
     const nearbyShips = this.ships.filter(ship=>
-      player.visionDistanceTo(ship) <= 2089,
+      player.withinVisionRect(ship,1800,1800) && !ship.dead,
     );
   
     const nearbyPlanets = this.planets.filter(ship=>
-      player.visionDistanceTo(ship) < 1849,
+      player.withinVisionRect(ship,1800,1800),
     );
 
     var nearbyCannonBalls = [];
     this.ships.forEach(ship =>{
       Object.values(ship.cannonBalls).forEach(ball=>{ 
-        if(player.visionDistanceTo(ball) < 1790){
+        if(player.withinVisionRect(ball,1800,1800)){
           nearbyCannonBalls.push(ball);
         }
       });
     });
     var nearbyGrapples = [];
     this.ships.forEach(ship=>{
-      if(ship.grapple && player.visionDistanceTo(ship.grapple) < 1849)
+      if(ship.grapple && player.withinVisionRect(ship,1800,1800))
       nearbyGrapples.push(ship.grapple);
     });
-
-    
     return {
       t: Date.now(),
       me: player.serializeForUpdate(),
       others: nearbyPlayers.map(p => p.serializeForUpdate()),
       blocks: nearbyBlocks.map(block=> block.serializeForUpdate()),
       ships: nearbyShips.map(ship =>ship.serializeForUpdate()),
-      planets: nearbyPlanets.map(p => p.serializeForUpdates()),
+      planets: nearbyPlanets.map(p => p.serializeForUpdate()),
       cannonBalls : nearbyCannonBalls.map(ball => ball.serializeForUpdate()),
       grapples : nearbyGrapples.map(g => g.serializeForUpdate()),
-
-
       leaderboard,
     };
   }
