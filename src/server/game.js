@@ -28,7 +28,7 @@ class Game {
     this.ships = [];
     this.planets = [];
     this.blocks = {};
-    this.blockID = 'a';
+    this.blockID = 1;
     this.teamID = 1;
     this.seenCannonBalls = [];
     this.seenGrapples = [];
@@ -40,8 +40,8 @@ class Game {
 
   addCrew(lobby){
      const generatePosition = () => {
-      const x = Constants.MAP_WIDTH * (Math.random() * 0.5);
-      const y = Constants.MAP_HEIGHT * (Math.random() * 0.5);
+      const x = Constants.MAP_WIDTH * (Math.random());
+      const y = Constants.MAP_HEIGHT * (Math.random());
       this.planets.forEach(planet =>{
         if(withinRect(x,y,planet,280,280)){
           generatePosition();
@@ -55,18 +55,44 @@ class Game {
       return {x,y};
     }
     const {x,y} = generatePosition();
-    this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),this.planets,this.ships));
+    this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+(Math.random() * 255).toString()+","+(Math.random() * 255).toString()+','+(Math.random() * 255).toString()+')',lobby.creator,this.planets,this.ships));
+    lobby.addShip(this.teamID.toString());
+    if(x > Constants.MAP_WIDTH/2){
+      this.ships[this.ships.length-1].turn = -1;
+    }
+    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x + 40,y-10,Constants.BLOCK_SIZE,Constants.BLOCK_SIZE);
+    this.blockID++;
+    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x - 40,y-10,Constants.BLOCK_SIZE,Constants.BLOCK_SIZE);
+    this.blockID++;
+    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x + 80,y-10,Constants.BLOCK_SIZE,Constants.BLOCK_SIZE);
+    this.blockID++;
     this.teamID++;
+
+    var i = 0;
+    var colors = ['red','blue','green','orange'];
     Object.keys(lobby.crew).forEach(id =>{
     this.sockets[id] = lobby.sockets[id];
-    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1]);
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],colors[i]);
     lobby.sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+    i++;
   });
   }
 
   removePlayer(socket) {
     delete this.sockets[socket.id];
     delete this.players[socket.id];
+  }
+
+  removeCrew(lobby){
+    Object.keys(lobby.crew).forEach(id =>{
+      delete this.sockets[id];
+      delete this.players[id];
+    });
+    for(var i = 0;i<this.ships.length;i++){
+      if(this.ships[i] == lobby.shipID){
+        this.ships.splice(i,1);
+      }
+    }
   }
 
   handlePress(socket,key){
@@ -117,21 +143,36 @@ class Game {
     Object.keys(this.players).forEach(playerID => {
       const player = this.players[playerID];
       if(player.pos.x < 0 || player.pos.x > Constants.MAP_WIDTH || player.pos.y < 0 || player.pos.y > MAP_HEIGHT){
-        player.dead = true;
+        player.outOfBounds = true;
+      }
+      else{
+        player.outOfBounds = false;
+        player.outOfBoundsTimer = 0;
       }
      player.update(dt);
     });
     //update Ships
     this.ships.forEach(ship =>{ 
       if(ship.pos.x < 0 || ship.pos.x > Constants.MAP_WIDTH || ship.pos.y < 0 || ship.pos.y > MAP_HEIGHT){
-        ship.dead = true;
-      } 
+        ship.outOfBounds = true;
+      }
+      else{
+        ship.outOfBounds = false;
+        ship.outOfBoundsTimer = 0;
+      }
       ship.ships = this.ships;
       ship.update(dt);
     });
     
     // update each block
     Object.keys(this.blocks).forEach(id => {
+      if(this.blocks[id].pos.x < 0 || this.blocks[id].pos.x > Constants.MAP_WIDTH || this.blocks[id].pos.y < 0 || this.blocks[id].pos.y > MAP_HEIGHT){
+        this.blocks[id].outOfBounds = true;
+      }
+      else{
+        this.blocks[id].outOfBounds = false;
+        this.blocks[id].outOfBoundsTimer = 0;
+      }
       this.blocks[id].update(dt);
     });
     
@@ -266,45 +307,43 @@ class Game {
       }
       player.didWithinShip = false;
 
-      //player block collision
-      Object.keys(this.blocks).forEach(id =>{
-        var happened = blockCollision(player,this.blocks[id]);
-        if(happened){  
-          if(this.blocks[id].holder == player){
-            player.drop();
-          }
-          color = 'red';
-          var {push, vec2} = happened;
-          if(vec2){
-            player.setMove(vec2);
-            player.applyFriction(this.blocks[id].netVelocity);
-            player.rotateTo(this.blocks[id].direction);
-            player.turnGravity(false);
-            player.onTop = true;
-            this.blocks[id].hasTop[player.id] = player;
-            player.isCol = true;
-            player.didCol = true;
-          }
-          else{
-            if(this.blocks[id].hasTop[player.id]){
-              player.onTop = false;
-              delete this.blocks[id].hasTop[player.id];
-            }
-            if(player.isGrabing && !player.isHolding){
-              player.grab(blocks[id]);
-            }
-          }
-          player.displace.add(push);
+    //player block Collision
+    Object.keys(this.blocks).forEach(id =>{
+      var happened = blockCollision(player,this.blocks[id]);
+      if(happened){  
+        if(this.blocks[id].holder == player){
+          player.drop();
+        }
+        var {push, vec2} = happened;
+        if(vec2){
+          player.setMove(vec2);
+          player.applyFriction(this.blocks[id].netVelocity);
+          player.rotateTo(this.blocks[id].direction);
+          player.turnGravity(false);
+          player.onTop = true;
+          this.blocks[id].hasTop[player.id] = player;
+          player.isCol = true;
+          player.didCol = true;
         }
         else{
-          this.blocks[id].wasJustHeld = false;
-          color = 'black';
           if(this.blocks[id].hasTop[player.id]){
             player.onTop = false;
             delete this.blocks[id].hasTop[player.id];
           }
+          if(player.isGrabing && !player.isHolding){
+            player.grab(this.blocks[id]);
+          }
         }
-      });  
+        player.displace.add(push);
+      }
+      else{
+        this.blocks[id].wasJustHeld = false;
+        if(this.blocks[id].hasTop[player.id]){
+          player.onTop = false;
+          delete this.blocks[id].hasTop[player.id];
+        }
+      }
+    });
 
       //PLAYER COLLISION FIX
       if(!player.didCol){
@@ -323,11 +362,13 @@ class Game {
     });
     this.ships.filter(player => !player.dead,).forEach(ship =>{
       //ship planet collision
-      for(var i = 0; i < this.planets.length; i++){
-        var happened = shipPlanetCollision(ship, this.planets[i]);
-        if(happened){
-          var {push} = happened;
-          ship.displace.add(push);
+      if(!ship.inOrbit){
+        for(var i = 0; i < this.planets.length; i++){
+          var happened = shipPlanetCollision(ship, this.planets[i]);
+          if(happened){
+            var {push} = happened;
+            ship.displace.add(push);
+          }
         }
       }
       //block Ship Collision
@@ -428,59 +469,59 @@ class Game {
       }
     });
     //block block Collision
-    var comboCol = {};
-    Object.keys(this.blocks).forEach(id => {
-      comboCol[id] = [];
-      blocks[id].gotPushed = false;
-    });
+  var comboCol = {};
+  Object.keys(this.blocks).forEach(id => {
+    comboCol[id] = [];
+    this.blocks[id].gotPushed = false;
+  });
 
     Object.keys(this.blocks).forEach(id =>{
-      Object.keys(this.blocks).forEach(id2 =>{
-        var v = false;
-        if(this.blocks[id] != this.blocks[id2] && comboCol[id2].indexOf(id) == -1){
-            var swaped = false;
-          
-          if(this.blocks[id].beingHeld){
+    Object.keys(this.blocks).forEach(id2 =>{
+      var v = false;
+      if(this.blocks[id] != this.blocks[id2] && comboCol[id2].indexOf(id) == -1){
+          var swaped = false;
+        
+        if(this.blocks[id2].beingHeld){
+          [id, id2] = [id2, id]; swaped = true;
+        }
+        else{
+          if(this.blocks[id].gotPushed){
             [id, id2] = [id2, id]; swaped = true;
           }
-          else{
-            if(this.blocks[id].gotPushed){
-              [id, id2] = [id2, id]; swaped = true;
-            }
-            var happened = blockBlockCollision(this.blocks[id2],this.blocks[id]);
-            if(happened)
-              var {push, vec2} = happened;
-            if(vec2){
-              v = true;
-              [id, id2] = [id2, id]; swaped = true;
-            }
+          var happened = blockBlockCollision(this.blocks[id2],this.blocks[id]);
+          if(happened)
+            var {push, vec2} = happened;
+          if(vec2){
+            v = true;
+            [id, id2] = [id2, id]; swaped = true;
           }
-          if(!v){
-            var happened = blockBlockCollision(this.blocks[id],this.blocks[id2]);
-          }
-          if(happened){  
-            var {push,vec2} = happened;
-            if(vec2 && this.blocks[id2].isCol){
-              this.blocks[id].applyFriction(blocks[id2].netVelocity);
-              this.blocks[id].rotateTo(blocks[id2].direction);
-              this.blocks[id].turnGravity(false);
-              this.blocks[id].onTop = true;
-              this.blocks[id].isCol = true;
-              this.blocks[id2].hasTop[id] = this.blocks[id];
-            }
-            else{delete this.blocks[id2].hasTop[id];}
-            this.blocks[id].displace.add(push);
-            this.blocks[id].gotPushed = true;
-          }
-          else{
-            delete this.blocks[id2].hasTop[id];
-          }
-
-          if(swaped){[id, id2] = [id2, id];}
-          comboCol[id].push(id2);
         }
-      });
+        if(!v){
+          var happened = blockBlockCollision(this.blocks[id],this.blocks[id2]);
+        }
+        if(happened){  
+          var {push,vec2} = happened;
+          if(vec2 && this.blocks[id2].isCol){
+            this.blocks[id].applyFriction(this.blocks[id2].netVelocity);
+            this.blocks[id].rotateTo(this.blocks[id2].direction);
+            this.blocks[id].turnGravity(false);
+            this.blocks[id].onTop = true;
+            this.blocks[id].isCol = true;
+            this.blocks[id2].hasTop[id] = this.blocks[id];
+          }
+          else{delete this.blocks[id2].hasTop[id];}
+          this.blocks[id].displace.add(push);
+          this.blocks[id].gotPushed = true;
+        }
+        else{
+          delete this.blocks[id2].hasTop[id];
+        }
+
+        if(swaped){[id, id2] = [id2, id];}
+        comboCol[id].push(id2);
+      }
     });
+  });
     //update Displacments
     Object.values(this.players).filter(player => !player.dead,).forEach(player =>{
       player.updateDisplace();

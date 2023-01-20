@@ -4,7 +4,7 @@ const CannonBall = require('./cannonBall');
 
 
 class Grapple extends CannonBall{
-    constructor(x, y, vec, ship, cannon){
+    constructor(id,x, y, vec, ship, cannon){
         super(x,y,vec, 80,ship);
         this.exists = true;
         this.timer = 0;
@@ -44,6 +44,7 @@ class Grapple extends CannonBall{
         this.planet = null;
         this.ship.justGrappled = true;
         this.ship.rotOGCounter = 0;
+        this.ship.continueGrapple = false;
         delete this;
     }
 
@@ -52,6 +53,7 @@ class Grapple extends CannonBall{
     }
     serializeForUpdate(){
         return{
+            id : this.id,
             x : this.pos.x,
             y : this.pos.y,
             xEnd : this.cannon.pos.x,

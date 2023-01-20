@@ -8,10 +8,11 @@ class Lobby{
         this.crew[socket.id] = username;
         this.sockets[socket.id] = socket;
         this.firstUpdate = true;
+        this.shipID;
     }
 
     addMember(socket){
-        if(Object.keys(this.sockets).length < 3){
+        if(Object.keys(this.sockets).length < 4){
             this.sockets[socket.id] = socket;
         }
     }
@@ -25,6 +26,9 @@ class Lobby{
             const socket = this.sockets[ID];
             socket.emit(Constants.MSG_TYPES.LOBBY_UPDATE, this.createUpdate());
           });
+    }
+    addShip(id){
+        this.shipID = id;
     }
     createUpdate(){
         return {crew : Object.values(this.crew), creator:this.creator,id : this.id}

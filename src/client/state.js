@@ -111,7 +111,7 @@ function interpolateShip(object1, object2, ratio){
   const interpolated = {};
 
   Object.keys(object1).forEach(key =>{
-    if (key === 'x' || key === 'y'){
+    if (key === 'x' || key === 'y' || key == 'direction'){
       interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;
     }
     
@@ -168,6 +168,15 @@ function interpolateShip(object1, object2, ratio){
       }
     }
     else if(key == 'platform'){
+      interpolated[key] = object1[key];
+      interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
+      interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;
+      for(var i = 0; i<object1[key]['points'].length;i++){
+        interpolated[key]['points'][i].x = object1[key]['points'][i].x + (object2[key]['points'][i].x - object1[key]['points'][i].x) * ratio;
+        interpolated[key]['points'][i].y = object1[key]['points'][i].y + (object2[key]['points'][i].y - object1[key]['points'][i].y) * ratio;
+      }
+    }
+    else if(key == 'flag'){
       interpolated[key] = object1[key];
       interpolated[key]['x'] = object1[key]['x'] + (object2[key]['x'] - object1[key]['x']) * ratio;
       interpolated[key]['y'] = object1[key]['y'] + (object2[key]['y'] - object1[key]['y']) * ratio;

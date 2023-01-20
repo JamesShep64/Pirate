@@ -8,6 +8,7 @@ class Block extends Polygon{
     this.colPoly = new Polygon([new Vector(0, height/2), new Vector(length/2, 0), new Vector(0, -height/2), new Vector(-length/2, 0)])  
     //IDENTIFICATION
     this.id = id;
+
     //MOVEMENT
     this.pos = new Vector(x,y);
     this.friction = new Vector(0,0);
@@ -18,14 +19,22 @@ class Block extends Polygon{
     this.friction = new Vector(0,0);
     this.isCol = false;
     this.floor = [0];
+    
+    //DEATH
+    this.dead = false;
+    this.deathTimer = 0;
+    this.outOfBounds = false;
+    this.outOfBoundsTimer = 0;
     //PLAYER INTERACTION
     this.beingHeld = false;
     this.holder;
     this.wasJustHeld = false;
+
     //ONTOP
     this.hasTop = {};
     this.onTop = false;
     this.holdVec = new Vector(0,0);
+
     //COLLISION
     this.radius = Math.sqrt((length/2) * (length/2) + (height/2) * (height/2));
     this.gotPushed = false;
@@ -34,19 +43,27 @@ class Block extends Polygon{
   }    
   
   update(dt) {
+    if(this.outOfBounds && !this.dead){
+        this.outOfBoundsTimer += dt;
+        if(this.outOfBoundsTimer > 15){
+          this.dead = true;
+          this.outOfBoundsTimer = 0;
+          this.outOfBounds = false;
+        }
+      }
     //GRAVITY
     this.gvel.x += dt * this.gravity.x;
     this.gvel.y += dt * this.gravity.y;
-    if(this.gvel.y > 900){
-      this.gvel.y = 900;
+    if(this.gvel.y > 600){
+      this.gvel.y = 600;
     }
 
     //APPLY VELOCITIES
     this.netVelocity.x = this.gvel.x + this.friction.x;
     this.netVelocity.y = this.gvel.y + this.friction.y;
     if(!this.beingHeld){
-      this.pos.x += dt * this.netVelocity.x;
-      this.pos.y += dt * this.netVelocity.y;
+      this.pos.x += dt * this.netVelocity.x * Constants.VELOCITY_MULTIPLIER;
+      this.pos.y += dt * this.netVelocity.y * Constants.VELOCITY_MULTIPLIER;
     }
   }
   
@@ -56,7 +73,8 @@ class Block extends Polygon{
       this.pos.y += this.displace.y;
     }
     else{
-      this.holdVec.add(this.displace);
+      this.holdVec.x += this.displace.x;
+      this.holdVec.y += this.displace.y;
       this.pos.x = this.holder.pos.x + this.holdVec.x;
       this.pos.y = this.holder.pos.y + this.holdVec.y;
     }

@@ -202,8 +202,13 @@ class Cannon{
     }
 
     shootGrapple(){
-        if(!this.ship.grapple && this.line)
-            this.ship.grapple = (new Grapple(this.pos.x + this.shootVec.points[0].x * 50, this.pos.y + this.shootVec.points[0].y * 50, this.shootVec.points[0], this.ship, this));
+        if(!this.ship.grapple && this.line){
+            this.ship.grapple = (this.id + this.cannonBallID.toString(),new Grapple(this.pos.x + this.shootVec.points[0].x * 50, this.pos.y + this.shootVec.points[0].y * 50, this.shootVec.points[0], this.ship, this));
+            this.cannonBallID++;
+        }
+        else{
+            this.ship.continueGrapple = true;
+        }
     }
 
     serializeForUpdate(){

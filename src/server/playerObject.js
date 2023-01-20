@@ -4,15 +4,18 @@ const Polygon = require('./polygon');
 const Constants = require('../shared/constants');
 
 class PlayerObject extends Polygon{
-  constructor(id, username, x, y,length,height,ship) {
+  constructor(id, username, x, y,length,height,ship,color) {
     super([new Vector(0,-height/2), new Vector(length/2,0), new Vector(0,height/2), new Vector(-length/2,0)]);
     //IDNETIFICATION
     this.id = id;
     this.username = username;
+    this.color = color;
     //DEATH
     this.dead = false;
     this.deathTimer = 0;
     this.ship = ship;
+    this.outOfBounds = false;
+    this.outOfBoundsTimer = 0;
     //MOVEMENT
     this.pos = new Vector(x,y);
     this.gvel = new Vector(0,0);
@@ -64,18 +67,31 @@ class PlayerObject extends Polygon{
     this.eyes = new Vector(x,y);
     this.onTelescope = false;
   }
+
     spawn(){
       this.dead = false;
       this.deathTimer = 0;
       this.pos.x = this.ship.spawnPoint.x;
       this.pos.y = this.ship.spawnPoint.y;
+      this.outOfBoundsTimer = 0;
     }
     update(dt) {
+      if(this.outOfBounds && !this.dead){
+        this.outOfBoundsTimer += dt;
+        if(this.outOfBoundsTimer > 6){
+          this.dead = true;
+          this.outOfBoundsTimer = 0;
+          this.outOfBounds = false;
+        }
+      }
       if(this.dead){
         this.deathTimer += dt;
         if(this.deathTimer > 2){
           if(!this.ship.dead)
             this.spawn();
+          else{
+            console.log('a');
+          }
         }
       }
       if(!this.dead){
@@ -85,7 +101,7 @@ class PlayerObject extends Polygon{
         }
 
         if(this.holding && (this.distanceTo(this.holding) > this.radius + this.holding.radius)){
-          this.drop();
+          //this.drop();
         }
       
         if((!this.isTrying && this.isUsing)){
@@ -120,9 +136,9 @@ class PlayerObject extends Polygon{
         }
         this.gvel.x += dt * this.gravity.x * this.gravityMult * 5;
         this.gvel.y += dt * this.gravity.y * this.gravityMult * 5;
-        if(this.gvel.x + this.gvel.y > 200){
-          this.gvel.y = 200 * this.gravity.y;
-          this.gvel.x = 200 * this.gravity.x;
+        if(this.gvel.x + this.gvel.y > 125){
+          this.gvel.y = 125 * this.gravity.y;
+          this.gvel.x = 125 * this.gravity.x;
         }
 
         //ladder Movment    
@@ -152,10 +168,10 @@ class PlayerObject extends Polygon{
           this.eyes.y = this.pos.y;
         }
         else{
-          if(Math.abs(this.eyes.x - this.pos.x) + Math.abs(this.eyes.y - this.pos.y) < 1000){
+          //if(Math.abs(this.eyes.x - this.pos.x) + Math.abs(this.eyes.y - this.pos.y) < 1000)
             this.netVelocity.x += this.horizMove.x + this.vertMove.x;
             this.netVelocity.y += this.horizMove.y + this.vertMove.y;
-          }
+          
           this.eyes.x += dt * this.netVelocity.x * Constants.VELOCITY_MULTIPLIER;
           this.eyes.y += dt * this.netVelocity.y * Constants.VELOCITY_MULTIPLIER;
         }
@@ -207,7 +223,7 @@ class PlayerObject extends Polygon{
     item.beingHeld = true;
     item.holder = this;
     var slope = new Vector(item.pos.x - this.pos.x, item.pos.y - this.pos.y).unit();
-    item.holdVec = new Vector(item.pos.x - this.pos.x + slope.x * 5, item.pos.y - this.pos.y + slope.y * 5);
+    item.holdVec = new Vector(item.pos.x - this.pos.x + slope.x * 8, item.pos.y - this.pos.y + slope.y * 8);
     item.turnGravity(false);
     item.wasJustHeld = true;
   }
@@ -437,11 +453,14 @@ serializeForUpdate() {
     eyesX : this.eyes.x,
     eyesY : this.eyes.y,
     id: this.id,
+    color : this.color,
     x : this.pos.x,
     y : this.pos.y,
     col : this.isCol,
     points: this.points,
     dead : this.dead,
+    outOfBoundsTimer : this.outOfBoundsTimer,
+
   };
 }
 }

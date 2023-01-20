@@ -75,16 +75,38 @@ function render() {
   });
   
   //draw me
-  if(!me.dead)
+  if(!me.dead){
     drawPoly(me,me);
+    context.fillStyle = me.color;
+    context.fill();
+  }
+  else{
+    context.globalAlpha = .6;
+    context.font = "200px papyrus";
+    context.fillText("R.I.P",canvas.width / 2 - 200,canvas.height / 2 + 75);
+    context.globalAlpha = 1;
+  }
+
   //draw others
-  others.filter(player => !player.dead,).forEach(player => drawPoly(player,me));
+  others.filter(player => !player.dead,).forEach(player => {drawPoly(player,me)
+    context.fillStyle = player.color;
+    context.fill();
+  });
+  context.fillStyle = 'black';
 
   //draw blocks
   blocks.forEach(block => drawPoly(block,me));
 
   //draw planets
   planets.forEach(planet => drawPoly(planet,me));
+  //draw text
+  context.globalAlpha = .6;
+  context.font = "400px serif";
+  context.fillStyle = "rgb("+(me.outOfBoundsTimer*42).toString()+", 0, 0)";
+  if(Math.round(me.outOfBoundsTimer) > 0)
+    context.fillText(Math.round(me.outOfBoundsTimer).toString(),canvas.width / 2 - 100,canvas.height / 2 + 100);
+  context.globalAlpha = 1;
+
 }
 
 function renderBackground(playerX, playerY){
@@ -197,20 +219,6 @@ function drawShipParts(ship,player){
     drawCannonWire(ship.cannonWire1, player, ship.x, ship.y);
     context.restore();
   
-    //draw graple
-  /*
-  if(ship.grapple){
-      const endX = canvas.width / 2 + ship.grapple.pos.x - player.pos.x;
-      const endY = canvas.height / 2 + ship.grapple.pos.y - player.pos.y;
-      const startX = canvas.width / 2 + ship.grapple.cannon.pos.x - player.pos.x;
-      const startY = canvas.height / 2 + ship.grapple.cannon.pos.y - player.pos.y;
-      context.beginPath();
-      context.moveTo(startX, startY);
-      context.lineTo(endX,endY);
-      context.stroke();
-      context.beginPath();
-    }
-    */
       context.strokeStyle = 'black';
       context.lineWidth = .5;
       //draw cannon1
@@ -246,22 +254,37 @@ function drawShipParts(ship,player){
       context.fill();
       context.fillStyle = 'black';
   
-      //draw ladder, mast, and trap door
+      //draw ladder, mast, flag, and trap door
       drawTrapDoor(ship.trapDoor,player);
       drawPoly(ship.ladder,player);
       drawPoly(ship.mast,player);
       context.fillStyle = '#4d0f20';
       context.fill();
       context.fillStyle = 'black';
+      drawPoly(ship.flag,player);
+      context.fillStyle = ship.flag.color;
+      context.fill();
+      context.fillStyle = 'black';
       drawPoly(ship.platform,player);
   
+      //draw flag Text
+      context.font = "16px papyrus";
+      context.save();
+      context.translate(canvas.width/2 - player.eyesX + ship.x + ship.flag.namePointX,canvas.height/2 - player.eyesY + ship.y + ship.flag.namePointY);
+      context.rotate(ship.direction);
+      context.fillText(ship.flag.name,0,0);
+      context.restore();
+
       //draw Telescope
       var canvasX = canvas.width / 2 + ship.telescope.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.telescope.y - player.eyesY;
       context.beginPath();
-      context.arc(canvasX, canvasY, ship.telescope.radius, 0, 2*Constants.PI);
+      context.arc(canvasX, canvasY, 5, 0, 2*Constants.PI);
       context.fill();
       drawPoly(ship.telescope,player);
+
+
+
   
       //draw button
       /*
