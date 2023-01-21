@@ -34,6 +34,10 @@ function render() {
   // Draw background
   renderBackground(me.eyesX, me.eyesY);
 
+
+  //draw planets
+  planets.forEach(planet => drawPoly(planet,me));
+
   //draw ship hulls
   
   ships.forEach(ship =>{
@@ -95,10 +99,13 @@ function render() {
   context.fillStyle = 'black';
 
   //draw blocks
-  blocks.forEach(block => drawPoly(block,me));
+  blocks.forEach(block => {
+    drawPoly(block,me);
+    context.fillStyle = "rgb(210,180,140)";
+    context.fill();
+    context.fillStyle = 'black';
+  });
 
-  //draw planets
-  planets.forEach(planet => drawPoly(planet,me));
   //draw text
   context.globalAlpha = .6;
   context.font = "400px serif";

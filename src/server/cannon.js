@@ -125,10 +125,9 @@ class Cannon{
     }
 
     rotateBarellTo(angle){
-        this.direction = angle;
-        this.direction %= 2*Constants.PI;
-        this.barell.rotate(angle);
-        this.shootVec.rotate(angle);
+        angle %= 2 * Constants.PI;
+        this.barell.rotate(angle - this.direction);
+        this.shootVec.rotate(angle - this.direction);
     }
 
 
@@ -203,7 +202,7 @@ class Cannon{
 
     shootGrapple(){
         if(!this.ship.grapple && this.line){
-            this.ship.grapple = (this.id + this.cannonBallID.toString(),new Grapple(this.pos.x + this.shootVec.points[0].x * 50, this.pos.y + this.shootVec.points[0].y * 50, this.shootVec.points[0], this.ship, this));
+            this.ship.grapple = new Grapple(this.id + this.cannonBallID.toString(),this.pos.x + this.shootVec.points[0].x * 50, this.pos.y + this.shootVec.points[0].y * 50, this.shootVec.points[0], this.ship, this);
             this.cannonBallID++;
         }
         else{

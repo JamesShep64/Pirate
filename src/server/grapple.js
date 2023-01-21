@@ -6,6 +6,7 @@ const CannonBall = require('./cannonBall');
 class Grapple extends CannonBall{
     constructor(id,x, y, vec, ship, cannon){
         super(x,y,vec, 80,ship);
+        this.id = id;
         this.exists = true;
         this.timer = 0;
         this.cannon = cannon;

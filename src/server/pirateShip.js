@@ -292,8 +292,8 @@ class PirateShip extends Polygon{
     var now = new Vector(this.turn * (this.points[1].x - this.points[0].x), this.turn * (this.points[1].y - this.points[0].y)).unit();
     var rot = Math.acos(this.tangent.dot(now));
         
-        if(!this.continueGrapple && this.direction < -this.turn * Constants.PI + .1 && this.direction > -this.turn * Constants.PI - .1){
-          this.continued = true;
+        if(this.continueGrapple && this.direction < -this.turn * Constants.PI + .1 && this.direction > -this.turn * Constants.PI - .1){
+          this.continued = true;        
         }
         if(!this.continueGrapple && this.direction < -this.turn * Constants.PI + .1 && this.direction > -this.turn * Constants.PI - .1){
             this.grapple.detach();
@@ -301,6 +301,9 @@ class PirateShip extends Polygon{
         }
         else if(this.continued && this.direction <  .1 && this.direction >  -.1){
           this.grapple.detach();
+          this.cannon1.rotateBarellTo(0);
+          this.cannonLower1.rotateBarellTo(2);
+          this.cannonLower2.rotateBarellTo(Constants.PI - 2);
           this.continued = false;
         }
         else{

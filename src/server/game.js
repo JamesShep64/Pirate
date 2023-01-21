@@ -177,7 +177,45 @@ class Game {
     });
     
     Object.values(this.players).filter(player => !player.dead,).forEach(player => {
-      this.ships.filter(player => !player.dead,).forEach(ship =>{
+    //player block Collision
+    Object.keys(this.blocks).forEach(id =>{
+      var happened = blockCollision(player,this.blocks[id]);
+      if(happened){  
+        if(this.blocks[id].holder == player){
+          player.drop();
+        }
+        var {push, vec2} = happened;
+        if(vec2){
+          player.setMove(vec2);
+          player.applyFriction(this.blocks[id].netVelocity);
+          player.rotateTo(this.blocks[id].direction);
+          player.turnGravity(false);
+          player.onTop = true;
+          this.blocks[id].hasTop[player.id] = player;
+          player.isCol = true;
+          player.didCol = true;
+        }
+        else{
+          if(this.blocks[id].hasTop[player.id]){
+            player.onTop = false;
+            delete this.blocks[id].hasTop[player.id];
+          }
+          if(player.isGrabing && !player.isHolding && !(this.blocks[id].holder != null && this.blocks[id].holder != player)){
+            player.grab(this.blocks[id]);
+          }
+        }
+        player.displace.add(push);
+      }
+      else{
+        this.blocks[id].wasJustHeld = false;
+        if(this.blocks[id].hasTop[player.id]){
+          player.onTop = false;
+          delete this.blocks[id].hasTop[player.id];
+        }
+      }
+    });
+
+    this.ships.filter(player => !player.dead,).forEach(ship =>{
       //player ship Collision
       var {push,vec2, i,happened} = blockShipCollision(player,ship);
       if(happened){  
@@ -197,6 +235,36 @@ class Game {
           //push after collision
       else{
         delete ship.hasPlayers[player.id];
+      }
+
+      //player Cannon interaction
+      if(player.isGrabing && (!ship.cannon1.holder != player && (player.holding == ship.cannon1 || !player.holding)))
+      ship.cannon1.move(player);
+
+      if(player.isTrying && (!ship.cannon1.user != player && (player.using == ship.cannon1 || !player.using)))
+        ship.cannon1.use(player);
+
+      if(player.isTrying && (!ship.cannonLower1.user != player && (player.using == ship.cannonLower1 || !player.using)))
+      ship.cannonLower1.use(player);
+
+      if(player.isTrying && (!ship.cannonLower2.user != player && (player.using == ship.cannonLower2 || !player.using)))
+      ship.cannonLower2.use(player);
+
+      if(player.isTrying && (!ship.cannonLower2.user != player && (player.using == ship.cannonLower2 || !player.using)))
+      ship.cannonLower2.use(player);
+      
+      if(player.isTrying && (!ship.telescope.user != player && (player.using == ship.cannonLower2 || !player.using)))
+      ship.telescope.use(player);
+
+      if(player.isTrying && ((player.pos.x - (ship.pos.x + ship.button.x)) * (player.pos.x - (ship.pos.x + ship.button.x)) + 
+      (player.pos.y - (ship.pos.y + ship.button.y)) * (player.pos.y - (ship.pos.y + ship.button.y))) < ((ship.buttonRadius + player.radius) * (ship.buttonRadius + player.radius))/2){
+        if(ship.trapDoor.isOpen){
+          ship.trapDoor.closing = true;
+        }
+        if(ship.trapDoor.isClosed){
+          ship.trapDoor.opening = true;
+
+        }
       }
   
       //player trap door Collision
@@ -241,35 +309,6 @@ class Game {
         player.didWithinShip = true;
       }
   
-      //player Cannon interaction
-      if(player.isGrabing && (!ship.cannon1.holder != player && (player.holding == ship.cannon1 || !player.holding)))
-          ship.cannon1.move(player);
-  
-        if(player.isTrying && (!ship.cannon1.user != player && (player.using == ship.cannon1 || !player.using)))
-          ship.cannon1.use(player);
-  
-        if(player.isTrying && (!ship.cannonLower1.user != player && (player.using == ship.cannonLower1 || !player.using)))
-        ship.cannonLower1.use(player);
-  
-        if(player.isTrying && (!ship.cannonLower2.user != player && (player.using == ship.cannonLower2 || !player.using)))
-        ship.cannonLower2.use(player);
-  
-        if(player.isTrying && (!ship.cannonLower2.user != player && (player.using == ship.cannonLower2 || !player.using)))
-        ship.cannonLower2.use(player);
-        
-        if(player.isTrying && (!ship.telescope.user != player && (player.using == ship.cannonLower2 || !player.using)))
-        ship.telescope.use(player);
-  
-        if(player.isTrying && ((player.pos.x - (ship.pos.x + ship.button.x)) * (player.pos.x - (ship.pos.x + ship.button.x)) + 
-        (player.pos.y - (ship.pos.y + ship.button.y)) * (player.pos.y - (ship.pos.y + ship.button.y))) < ((ship.buttonRadius + player.radius) * (ship.buttonRadius + player.radius))/2){
-          if(ship.trapDoor.isOpen){
-            ship.trapDoor.closing = true;
-          }
-          if(ship.trapDoor.isClosed){
-            ship.trapDoor.opening = true;
-  
-          }
-        }
       //player ladder interaction
       var happened = playerLadderCollision(player,ship.ladder);
       if(happened){  
@@ -307,43 +346,8 @@ class Game {
       }
       player.didWithinShip = false;
 
-    //player block Collision
-    Object.keys(this.blocks).forEach(id =>{
-      var happened = blockCollision(player,this.blocks[id]);
-      if(happened){  
-        if(this.blocks[id].holder == player){
-          player.drop();
-        }
-        var {push, vec2} = happened;
-        if(vec2){
-          player.setMove(vec2);
-          player.applyFriction(this.blocks[id].netVelocity);
-          player.rotateTo(this.blocks[id].direction);
-          player.turnGravity(false);
-          player.onTop = true;
-          this.blocks[id].hasTop[player.id] = player;
-          player.isCol = true;
-          player.didCol = true;
-        }
-        else{
-          if(this.blocks[id].hasTop[player.id]){
-            player.onTop = false;
-            delete this.blocks[id].hasTop[player.id];
-          }
-          if(player.isGrabing && !player.isHolding){
-            player.grab(this.blocks[id]);
-          }
-        }
-        player.displace.add(push);
-      }
-      else{
-        this.blocks[id].wasJustHeld = false;
-        if(this.blocks[id].hasTop[player.id]){
-          player.onTop = false;
-          delete this.blocks[id].hasTop[player.id];
-        }
-      }
-    });
+
+
 
       //PLAYER COLLISION FIX
       if(!player.didCol){
