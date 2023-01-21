@@ -94,6 +94,7 @@ function handleClick(click){
 }
 
 function onDisconnect() {
+  console.log('disconnect');
   var creator = false;
   var deleteID;
   Object.values(lobbies).every(lobby =>{
