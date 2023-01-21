@@ -30,8 +30,16 @@ class Lobby{
     addShip(id){
         this.shipID = id;
     }
+    removeMember(socket){
+        if(this.crew[socket.id]){
+            delete this.crew[socket.id];
+        }
+        delete this.sockets[socket.id];
+        this.update();
+    }
     createUpdate(){
         return {crew : Object.values(this.crew), creator:this.creator,id : this.id}
     }
+
 }
 module.exports = Lobby;

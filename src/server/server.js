@@ -7,6 +7,7 @@ const Constants = require('../shared/constants');
 const Game = require('./game');
 const Lobby = require('./lobby');
 const webpackConfig = require('../../webpack.dev.js');
+const { MSG_TYPES } = require('../shared/constants');
 
 // Setup an Express server
 const app = express();
@@ -40,9 +41,14 @@ const io = socketio(server);
 // Listen for socket.io connections
 io.on('connection', socket => {
   if(didJoinLobby){
-    lobbies[lobbyID].addMember(socket);
-    didJoinLobby = false;
-    socket.emit(Constants.MSG_TYPES.JOINED_LOBBY,{creator : lobbies[lobbyID].creator, id : lobbies[lobbyID].id});
+    if(lobbies[lobbyID]){
+      lobbies[lobbyID].addMember(socket);
+      didJoinLobby = false;
+      socket.emit(Constants.MSG_TYPES.JOINED_LOBBY,{creator : lobbies[lobbyID].creator, id : lobbies[lobbyID].id});
+    }
+    else{
+      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME);
+    }
   }
   console.log('Player connected!', socket.id);
   socket.on(Constants.MSG_TYPES.CREATE_LOBBY,createLobby);
@@ -88,12 +94,30 @@ function handleClick(click){
 }
 
 function onDisconnect() {
-  Object.values(lobbies).forEach(lobby =>{
+  var creator = false;
+  var deleteID;
+  Object.values(lobbies).every(lobby =>{
       if(this.id == lobby.id){
         game.removeCrew(lobby);
-        delete lobbies[lobby.id];
-        return;
+        Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
+          socket.emit(MSG_TYPES.CREATOR_LEFT_GAME);
+        });
+        deleteID = lobby.id;
+        creator = true;
+        return false;
       }
   });
+  if(creator){
+    delete lobbies[deleteID]; 
+    return;
+  }
   game.removePlayer(this);
+  Object.values(lobbies).forEach(lobby =>{
+    Object.keys(lobby.sockets).forEach(id =>{
+      if(this.id == id){
+        lobby.removeMember(this);
+      }
+    });
+  });
+
 }

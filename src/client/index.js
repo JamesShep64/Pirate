@@ -1,6 +1,6 @@
 // Learn more about this file at:
 // https://victorzhou.com/blog/build-an-io-game-part-1/#3-client-entrypoints
-import { connect, play,createLobby,joinCrew } from './networking';
+import { disconnect,connect, play,createLobby,joinCrew } from './networking';
 import { startRendering, stopRendering } from './render';
 import { startCapturingInput, stopCapturingInput } from './input';
 import { downloadAssets } from './assets';
@@ -30,6 +30,9 @@ Promise.all([
   usernameMenu.classList.remove('hidden');
   usernameInput.focus();
   lobbyButton.onclick = () => {
+    window.addEventListener('beforeunload',() =>{
+      disconnect();
+    });
     if(!joinedLobby){
       createLobby(usernameInput.value);
     }

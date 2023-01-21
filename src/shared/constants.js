@@ -24,6 +24,7 @@ module.exports = Object.freeze({
     JOINED_LOBBY: 'joined_lobby',
     JOINED_CREW : 'joined_crew',
     CREATOR_JOINED_GAME : 'creator_joined_game',
+    CREATOR_LEFT_GAME : 'creator_joined_game',
     
   },
 });
