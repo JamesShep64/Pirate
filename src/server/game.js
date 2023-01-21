@@ -55,7 +55,7 @@ class Game {
       return {x,y};
     }
     const {x,y} = generatePosition();
-    this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+(Math.random() * 255).toString()+","+(Math.random() * 255).toString()+','+(Math.random() * 255).toString()+')',lobby.creator,this.planets,this.ships));
+    this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+((Math.random() * 255) - 50).toString()+","+((Math.random() * 255) - 50).toString()+','+((Math.random() * 255) - 50).toString()+')',lobby.creator,this));
     lobby.addShip(this.teamID.toString());
     if(x > Constants.MAP_WIDTH/2){
       this.ships[this.ships.length-1].turn = -1;
@@ -123,8 +123,8 @@ class Game {
   }
 
   createMap(){
-    for(var x =0; x < Constants.MAP_WIDTH; x+=900){
-      for(var y =400; y < Constants.MAP_HEIGHT; y+=900){
+    for(var x =-400; x < Constants.MAP_WIDTH + 900; x+=900){
+      for(var y = -400; y < Constants.MAP_HEIGHT + 1000; y+=900){
         var xPos = (.5 - Math.random()) * 600 + x;
         var yPos = (.5 - Math.random()) * 600 + y;
         this.planets.push(new Planet(xPos,yPos));
@@ -410,6 +410,15 @@ class Game {
             }
             this.blocks[id].displace.add(push);
         }
+      });
+      Object.keys(this.blocks).forEach(id =>{
+        this.planets.forEach(planet =>{
+          var happened = blockCollision(this.blocks[id],planet);
+          if(happened){
+            var {push} = happened;
+            this.blocks[id].displace.add(push);
+          }
+        });
       });
   
       //cannon ball ship collision

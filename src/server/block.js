@@ -52,10 +52,10 @@ class Block extends Polygon{
         }
       }
     //GRAVITY
-    this.gvel.x += dt * this.gravity.x;
-    this.gvel.y += dt * this.gravity.y;
-    if(this.gvel.y > 600){
-      this.gvel.y = 600;
+    this.gvel.x += dt * this.gravity.x * 5;
+    this.gvel.y += dt * this.gravity.y * 5;
+    if(this.gvel.y > 125){
+      this.gvel.y = 125;
     }
 
     //APPLY VELOCITIES

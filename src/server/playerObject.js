@@ -71,8 +71,8 @@ class PlayerObject extends Polygon{
     spawn(){
       this.dead = false;
       this.deathTimer = 0;
-      this.pos.x = this.ship.spawnPoint.x;
-      this.pos.y = this.ship.spawnPoint.y;
+      this.pos.x = this.ship.spawnPoint1.points.x + this.ship.pos.x;
+      this.pos.y = this.ship.spawnPoint1.points.y + this.ship.pos.y;
       this.outOfBoundsTimer = 0;
     }
     update(dt) {
@@ -85,13 +85,16 @@ class PlayerObject extends Polygon{
         }
       }
       if(this.dead){
+        this.gvel.x = 0;
+        this.gvel.y = 0;
+        this.friction.x = 0;
+        this.friction.y = 0;
+        this.jumpVel.x = 0;
+        this.jumpVel.y = 0;
         this.deathTimer += dt;
         if(this.deathTimer > 2){
           if(!this.ship.dead)
             this.spawn();
-          else{
-            console.log('a');
-          }
         }
       }
       if(!this.dead){
@@ -101,7 +104,7 @@ class PlayerObject extends Polygon{
         }
 
         if(this.holding && (this.distanceTo(this.holding) > this.radius + this.holding.radius)){
-          //this.drop();
+          this.drop();
         }
       
         if((!this.isTrying && this.isUsing)){
@@ -293,11 +296,11 @@ class PlayerObject extends Polygon{
         }
     }
 
-    if(key == 'q'){
+    if(key == 'k'){
       this.isGrabing = true;
     }
 
-    if(key == 'e'){
+    if(key == 'j'){
       this.isTrying = true;
     }
 
@@ -310,7 +313,7 @@ class PlayerObject extends Polygon{
       }
     }
 
-    if(key == 'k'){
+    if(key == 'l'){
       if(this.isUsing  && !this.onTelescope)
         this.using.shootGrapple();
     }
@@ -330,11 +333,11 @@ class PlayerObject extends Polygon{
         this.stopLeft();
     }
 
-    if(key == 'q'){
+    if(key == 'k'){
       this.isGrabing = false;
     }
 
-    if(key == 'e'){
+    if(key == 'j'){
       this.isTrying = false;
     }
 

@@ -80,14 +80,6 @@ class Cannon{
             this.pos.y += 10 * perp.y;
             this.pos.x += 10 * now.x;
             this.pos.y += 10 * now.y;
-            if(this.side == 1){
-                this.ship.spawnPoint.x = this.point.x + this.ship.pos.x;
-                this.ship.spawnPoint.y = this.point.y + this.ship.pos.y;
-                this.ship.spawnPoint.x += 30 * perp.x;
-                this.ship.spawnPoint.y += 30 * perp.y;
-                this.ship.spawnPoint.x += 30 * now.x;
-                this.ship.spawnPoint.y += 30 * now.y;
-            }
         }
         //load cannon
         if(this.isLoading){

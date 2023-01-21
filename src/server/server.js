@@ -88,5 +88,12 @@ function handleClick(click){
 }
 
 function onDisconnect() {
+  Object.values(lobbies).forEach(lobby =>{
+      if(this.id == lobby.id){
+        game.removeCrew(lobby);
+        delete lobbies[lobby.id];
+        return;
+      }
+  });
   game.removePlayer(this);
 }
