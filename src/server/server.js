@@ -39,12 +39,13 @@ function createLobbyLink(id,socket){
     lobbyID = id;
   });
 }
+const io = socketio(server);
+
 // Setup socket.io
 const wss = new WebSocket.Server({
   server,
 });
 
-const io = socketio(server);
 // Listen for socket.io connections
 wss.on('connection', socket => {
   if(didJoinLobby && lobbyID != null){
@@ -67,26 +68,6 @@ wss.on('connection', socket => {
   socket.on('disconnect', onDisconnect);
 });
 
-io.on('connection', socket => {
-  if(didJoinLobby && lobbyID != null){
-    if(lobbies[lobbyID]){
-      lobbies[lobbyID].addMember(socket);
-      didJoinLobby = false;
-      socket.emit(Constants.MSG_TYPES.JOINED_LOBBY,{creator : lobbies[lobbyID].creator, id : lobbies[lobbyID].id});
-      lobbyID = null;
-    }
-    else{
-      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME,'a');
-    }
-  }
-  console.log('Player connected!', socket.id);
-  socket.on(Constants.MSG_TYPES.CREATE_LOBBY,createLobby);
-  socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
-  socket.on(Constants.MSG_TYPES.PRESS, handlePress);
-  socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
-  socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
-  socket.on('disconnect', onDisconnect);
-});
 
 // Setup the Game
 const game = new Game();
