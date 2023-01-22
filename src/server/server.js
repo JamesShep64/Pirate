@@ -56,7 +56,6 @@ io.on('connection', socket => {
   socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
   socket.on(Constants.MSG_TYPES.PRESS, handlePress);
   socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
-  socket.on(Constants.MSG_TYPES.CLICK, handleClick);
   socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
   socket.on('disconnect', onDisconnect);
 });
@@ -78,6 +77,10 @@ function joinCrew(username){
   Object.values(lobbies).forEach(lobby =>{
     Object.keys(lobby.sockets).forEach(id =>{
       if(this.id == id){
+        if(lobby.ship){
+          game.addStragler(this,username,lobby);
+          this.emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+        }
         lobby.addCrew(this,username);
         lobby.update();
       }
@@ -90,9 +93,7 @@ function handlePress(key){
 function handleRelease(key){
   game.handleRelease(this,key);
 }
-function handleClick(click){
-  game.handleClick(this,click);
-}
+
 
 function onDisconnect() {
   var creator = false;
