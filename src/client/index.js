@@ -31,6 +31,7 @@ Promise.all([
   usernameInput.focus();
   lobbyButton.onclick = () => {
     window.addEventListener('beforeunload',() =>{
+      console.log('a');
       disconnect();
     });
     if(!joinedLobby){

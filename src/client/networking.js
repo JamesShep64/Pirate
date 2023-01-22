@@ -40,6 +40,7 @@ export const play = username => {
 };
 
 export const disconnect = () =>{
+  console.log('a');
   console.log('Disconnected from server.');
   document.getElementById('disconnect-modal').classList.remove('hidden');
   document.getElementById('reconnect-button').onclick = () => {
