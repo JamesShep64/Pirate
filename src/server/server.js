@@ -96,6 +96,7 @@ function handleRelease(key){
 
 
 function onDisconnect() {
+  console.log('DC');
   var creator = false;
   var deleteID;
   Object.values(lobbies).every(lobby =>{
