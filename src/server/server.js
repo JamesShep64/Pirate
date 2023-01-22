@@ -1,4 +1,4 @@
-/*
+
 const express = require('express');
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
@@ -12,6 +12,7 @@ const { MSG_TYPES } = require('../shared/constants');
 
 // Setup an Express server
 const app = express();
+const WebSocket = require("ws");
 app.use(express.static('public'));
 
 if (process.env.NODE_ENV === 'development') {
@@ -22,6 +23,7 @@ if (process.env.NODE_ENV === 'development') {
   // Static serve the dist/ folder in production
   app.use(express.static('dist'));
 }
+
 
 // Listen on port
 const port = process.env.PORT || 3000;
@@ -37,10 +39,11 @@ function createLobbyLink(id,socket){
   });
 }
 // Setup socket.io
-const io = socketio(server);
-
+const wss = new WebSocket.Server({
+  server,
+});
 // Listen for socket.io connections
-io.on('connection', socket => {
+wss.on('connection', socket => {
   if(didJoinLobby && lobbyID != null){
     if(lobbies[lobbyID]){
       lobbies[lobbyID].addMember(socket);
@@ -123,31 +126,3 @@ function onDisconnect() {
     });
   });
 }
-*/
-const WebSocket = require("ws");
-const server = require("http").createServer();
-const express = require("express");
-const app = express();
-
-
-// serve files from the public directory
-server.on("request", app.use(express.static("public")));
-
-// tell the WebSocket server to use the same HTTP server
-const wss = new WebSocket.Server({
-  server,
-});
-
-wss.on("connection", function connection(ws, req) {
-  const clientId = req.url.replace("/?id=", "");
-  console.log(`Client connected with ID: ${clientId}`);
-
-  let n = 0;
-  const interval = setInterval(() => {
-    ws.send(`you have been connected for ${n++} seconds`);
-  }, 1000);
-
-  ws.on("close", () => {
-    clearInterval(interval);
-  });
-});
