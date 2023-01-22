@@ -2,7 +2,7 @@ const express = require('express');
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const socketio = require('socket.io');
-
+const Websocket = require('ws')
 const Constants = require('../shared/constants');
 const Game = require('./game');
 const Lobby = require('./lobby');
@@ -96,7 +96,6 @@ function handleRelease(key){
 
 
 function onDisconnect() {
-  console.log('DC');
   var creator = false;
   var deleteID;
   Object.values(lobbies).every(lobby =>{
@@ -118,6 +117,7 @@ function onDisconnect() {
     Object.keys(lobby.sockets).forEach(id =>{
       if(this.id == id){
         lobby.removeMember(this);
+        lobby.update();
       }
     });
   });
