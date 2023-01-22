@@ -78,6 +78,10 @@ class Game {
   });
   }
 
+  addStragler(socket,lobby){
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],colors[i]);
+  }
+
   removePlayer(socket) {
     delete this.sockets[socket.id];
     delete this.players[socket.id];

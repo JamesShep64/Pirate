@@ -103,8 +103,8 @@ class PirateShip extends Polygon{
     this.damages = [];
 
     //player spawn 
-    this.spawnPoint1 = new Polygon(new Vector(this.points[4].x + 25,this.points[4].y - 25));
-    this.spawnPoint2 = new Polygon(new Vector(70,-45));
+    this.spawnPoint1 = new Polygon([new Vector(this.points[4].x + 25,this.points[4].y - 25)]);
+    this.spawnPoint2 = new Polygon([new Vector(70,-45)]);
 
     //death
     this.dead = false;

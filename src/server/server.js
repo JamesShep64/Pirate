@@ -56,7 +56,7 @@ io.on('connection', socket => {
   socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
   socket.on(Constants.MSG_TYPES.PRESS, handlePress);
   socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
-  //socket.on(Constants.MSG_TYPES.CLICK, handleClick);
+  socket.on(Constants.MSG_TYPES.CLICK, handleClick);
   socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
   socket.on('disconnect', onDisconnect);
 });
@@ -101,7 +101,6 @@ function onDisconnect() {
       if(this.id == lobby.id){
         game.removeCrew(lobby);
         Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
-          socket.emit(MSG_TYPES.CREATOR_LEFT_GAME,'b');
         });
         deleteID = lobby.id;
         creator = true;

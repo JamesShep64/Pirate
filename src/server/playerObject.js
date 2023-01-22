@@ -73,12 +73,12 @@ class PlayerObject extends Polygon{
       this.deathTimer = 0;
       var r = Math.random();
       if(r < .5){
-        this.pos.x = this.ship.spawnPoint1.points.x + this.ship.pos.x;
-        this.pos.y = this.ship.spawnPoint1.points.y + this.ship.pos.y;
+        this.pos.x = this.ship.spawnPoint1.points[0].x + this.ship.pos.x;
+        this.pos.y = this.ship.spawnPoint1.points[0].y + this.ship.pos.y;
       }
       else{
-        this.pos.x = this.ship.spawnPoint2.points.x + this.ship.pos.x;
-        this.pos.y = this.ship.spawnPoint2.points.y + this.ship.pos.y;
+        this.pos.x = this.ship.spawnPoint2.points[0].x + this.ship.pos.x;
+        this.pos.y = this.ship.spawnPoint2.points[0].y + this.ship.pos.y;
 
       }
       this.outOfBoundsTimer = 0;
