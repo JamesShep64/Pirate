@@ -24,7 +24,9 @@ export const connect = onGameOver => (
     socket.on(Constants.MSG_TYPES.LOBBY_UPDATE,processLobbyUpdate);
     socket.on(Constants.MSG_TYPES.JOINED_LOBBY,joinLobby);
     socket.on(Constants.MSG_TYPES.CREATOR_JOINED_GAME,creatorJoined);
-    socket.on(Constants.MSG_TYPES.CREATOR_LEFT_GAME,disconnect);
+    /*socket.on(Constants.MSG_TYPES.CREATOR_LEFT_GAME,() =>{disconnect()
+      console.log('CREATOR LEFT GAME');
+    });*/
     socket.on(Constants.MSG_TYPES.GAME_OVER, onGameOver);
     socket.on('disconnect', () => {
       console.log('disconnected');
@@ -36,7 +38,8 @@ export const play = username => {
   socket.emit(Constants.MSG_TYPES.JOIN_GAME);
 };
 
-export const disconnect = () =>{
+export const disconnect = (e) =>{
+  console.log(e);
   console.log('Disconnected from server.');
   document.getElementById('disconnect-modal').classList.remove('hidden');
   document.getElementById('reconnect-button').onclick = () => {

@@ -40,14 +40,15 @@ const io = socketio(server);
 
 // Listen for socket.io connections
 io.on('connection', socket => {
-  if(didJoinLobby){
+  if(didJoinLobby && lobbyID != null){
     if(lobbies[lobbyID]){
       lobbies[lobbyID].addMember(socket);
       didJoinLobby = false;
       socket.emit(Constants.MSG_TYPES.JOINED_LOBBY,{creator : lobbies[lobbyID].creator, id : lobbies[lobbyID].id});
+      lobbyID = null;
     }
     else{
-      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME);
+      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME,'a');
     }
   }
   console.log('Player connected!', socket.id);
@@ -94,14 +95,13 @@ function handleClick(click){
 }
 
 function onDisconnect() {
-  console.log('disconnect');
   var creator = false;
   var deleteID;
   Object.values(lobbies).every(lobby =>{
       if(this.id == lobby.id){
         game.removeCrew(lobby);
         Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
-          socket.emit(MSG_TYPES.CREATOR_LEFT_GAME);
+          socket.emit(MSG_TYPES.CREATOR_LEFT_GAME,'b');
         });
         deleteID = lobby.id;
         creator = true;

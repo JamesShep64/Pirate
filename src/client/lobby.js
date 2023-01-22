@@ -5,7 +5,6 @@ const rows = document.querySelectorAll('#lobby-board tr');
 var creator;
 var id;
 export function updateLobbyBoard(update) {
-  console.log(update.crew);
   for (let i = 0; i < update.crew.length; i++) {
     rows[i].innerHTML = `<td>${escape(update.crew[i].slice(0, 15))}</td>`;
   }
