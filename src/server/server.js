@@ -12,7 +12,6 @@ const { MSG_TYPES } = require('../shared/constants');
 
 // Setup an Express server
 const app = express();
-const WebSocket = require("ws");
 app.use(express.static('public'));
 
 if (process.env.NODE_ENV === 'development') {
@@ -27,9 +26,11 @@ if (process.env.NODE_ENV === 'development') {
 
 // Listen on port
 const port = process.env.PORT || 3000;
-const server = require("https").createServer();
-server.listen(port);
+const server = app.listen(port);
 console.log(`Server listening on port ${port}`);
+
+// Setup socket.io
+const io = socketio(server);
 
 var didJoinLobby = false;
 var lobbyID;
@@ -41,12 +42,10 @@ function createLobbyLink(id,socket){
   });
 }
 // Setup socket.io
-const wss = new WebSocket.Server({
-  server,
-});
+ 
 
 // Listen for socket.io connections
-wss.on('connection', socket => {
+io.on('connection', socket => {
   if(didJoinLobby && lobbyID != null){
     if(lobbies[lobbyID]){
       lobbies[lobbyID].addMember(socket);
