@@ -3,7 +3,7 @@ const express = require('express');
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const socketio = require('socket.io');
-const Websocket = require('ws')
+const Websocket = require('ws');
 const Constants = require('../shared/constants');
 const Game = require('./game');
 const Lobby = require('./lobby');
@@ -39,8 +39,6 @@ function createLobbyLink(id,socket){
     lobbyID = id;
   });
 }
-const io = socketio(server);
-
 // Setup socket.io
 const wss = new WebSocket.Server({
   server,
@@ -67,7 +65,6 @@ wss.on('connection', socket => {
   socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
   socket.on('disconnect', onDisconnect);
 });
-
 
 // Setup the Game
 const game = new Game();
