@@ -54,7 +54,7 @@ io.on('connection', socket => {
       lobbyID = null;
     }
     else{
-      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME,'a');
+      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME);
     }
   }
   console.log('Player connected!', socket.id);
@@ -108,6 +108,7 @@ function onDisconnect() {
       if(this.id == lobby.id){
         game.removeCrew(lobby);
         Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
+          
         });
         deleteID = lobby.id;
         creator = true;

@@ -8,7 +8,7 @@ import { joinLobby,creatorJoined } from '.';
 const canvas = document.getElementById('game-canvas');
 const Constants = require('../shared/constants');
 
-const socketProtocol = (window.location.protocol.includes('https')) ? 'ws' : 'wss';
+const socketProtocol = (window.location.protocol.includes('https')) ? 'wss' : 'ws';
 const socket = io(`${socketProtocol}://${window.location.host}`, { reconnection: false });
 const connectedPromise = new Promise(resolve => {
   socket.on('connect', () => {
