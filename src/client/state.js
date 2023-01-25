@@ -16,7 +16,6 @@ export function initState() {
   firstServerTimestamp = 0;
 }
 export function processLobbyUpdate(update){
-  console.log(update.crew);
   updateLobbyBoard(update);
 }
 export function processGameUpdate(update) {

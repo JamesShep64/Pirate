@@ -1,17 +1,18 @@
-
-const express = require('express');
+const WebSocket = require("ws");
+const express = require("express");
+const app = express();
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
-const socketio = require('socket.io');
-const Websocket = require('ws');
+const webpackConfig = require('../../webpack.dev.js');
+const compiler = webpack(webpackConfig);
+
 const Constants = require('../shared/constants');
 const Game = require('./game');
 const Lobby = require('./lobby');
-const webpackConfig = require('../../webpack.dev.js');
-const { MSG_TYPES } = require('../shared/constants');
+const e = require("express");
 
-// Setup an Express server
-const app = express();
+app.use(webpackDevMiddleware(compiler));
+
 app.use(express.static('public'));
 
 if (process.env.NODE_ENV === 'development') {
@@ -23,17 +24,34 @@ if (process.env.NODE_ENV === 'development') {
   app.use(express.static('dist'));
 }
 
-
-// Listen on port
 const port = process.env.PORT || 3000;
 const server = app.listen(port);
 console.log(`Server listening on port ${port}`);
 
-// Setup socket.io
-const io = socketio(server);
+// tell the WebSocket server to use the same HTTP server
+const wss = new WebSocket.Server({
+  server,
+});
+
+//generate socket id
+const IDs = [];
+const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function generateString(length) {
+    let result = '';
+    const charactersLength = characters.length;
+    for ( let i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    if(IDs.indexOf(result) != -1){
+      generateString(length);
+    }
+    IDs.push(result);
+    return result;
+}
 
 var didJoinLobby = false;
-var lobbyID;
+var lobbyID = null;
+
 function createLobbyLink(id,socket){
   app.get('/'+id,(req,res)=>{
     res.redirect('/');
@@ -41,51 +59,70 @@ function createLobbyLink(id,socket){
     lobbyID = id;
   });
 }
-// Setup socket.io
- 
 
-// Listen for socket.io connections
-io.on('connection', socket => {
+wss.on("connection", function connection(ws, req) {
   if(didJoinLobby && lobbyID != null){
     if(lobbies[lobbyID]){
-      lobbies[lobbyID].addMember(socket);
-      didJoinLobby = false;
-      socket.emit(Constants.MSG_TYPES.JOINED_LOBBY,{creator : lobbies[lobbyID].creator, id : lobbies[lobbyID].id});
+      ws.id = generateString(10);
+      lobbies[lobbyID].addMember(ws);
+      ws.send(JSON.stringify({message : Constants.MSG_TYPES.JOINED_LOBBY,update : {creator : lobbies[lobbyID].creator, id : lobbies[lobbyID].id}}));
       lobbyID = null;
     }
     else{
-      socket.emit(MSG_TYPES.CREATOR_LEFT_GAME);
+      ws.send(MSG_TYPES.CREATOR_LEFT_GAME);
     }
   }
-  console.log('Player connected!', socket.id);
-  socket.on(Constants.MSG_TYPES.CREATE_LOBBY,createLobby);
-  socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
-  socket.on(Constants.MSG_TYPES.PRESS, handlePress);
-  socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
-  socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
-  socket.on('disconnect', onDisconnect);
+  if(!didJoinLobby)
+    ws.id = generateString(10);
+  didJoinLobby = false;
+  ws.onmessage = m =>{
+    var e = JSON.parse(m.data);
+    if(e.message == Constants.MSG_TYPES.CREATE_LOBBY){
+      createLobby(e.username,ws);
+    }
+
+    if(e.message == Constants.MSG_TYPES.JOIN_GAME){
+      joinGame(ws);
+    }
+
+    if(e.message == Constants.MSG_TYPES.PRESS){
+      handlePress(e.key,ws);
+    }
+
+    if(e.message == Constants.MSG_TYPES.RELEASE){
+      handleRelease(e.key,ws);
+    }
+
+    if(e.message == Constants.MSG_TYPES.JOINED_CREW){
+      joinCrew(e.username,ws);
+    }
+
+    if(e.message == 'disconnect'){
+      onDisconnect(ws);
+    }
+  }
 });
 
 // Setup the Game
 const game = new Game();
 var lobbies = {};
-function joinGame() {
-  game.addCrew(lobbies[this.id]);
+function joinGame(ws) {
+  game.addCrew(lobbies[ws.id]);
 }
 
-function createLobby(creator){
-  lobbies[creator.socketID] = new Lobby(this,creator.username);
-  lobbies[creator.socketID].update();
-  createLobbyLink(creator.socketID,this);
+const createLobby = (username,s) => {
+  lobbies[s.id] = new Lobby(s,username);
+  lobbies[s.id].update();
+  createLobbyLink(s.id,s);
 }
 
-function joinCrew(username){
+function joinCrew(username,ws){
   Object.values(lobbies).forEach(lobby =>{
     Object.keys(lobby.sockets).forEach(id =>{
-      if(this.id == id){
+      if(ws.id == id){
         if(lobby.ship){
-          game.addStragler(this,username,lobby);
-          this.emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+          game.addStragler(ws,username,lobby);
+          ws.send(JSON.stringify({mesage : Constants.MSG_TYPES.CREATOR_JOINED_GAME}));
         }
         lobby.addCrew(this,username);
         lobby.update();
@@ -93,21 +130,21 @@ function joinCrew(username){
     });
   });
 }
-function handlePress(key){
-  game.handlePress(this,key);
+function handlePress(key,ws){
+  game.handlePress(ws,key);
 }
-function handleRelease(key){
-  game.handleRelease(this,key);
+function handleRelease(key,ws){
+  game.handleRelease(ws,key);
 }
 
 
-function onDisconnect() {
+function onDisconnect(ws) {
   var creator = false;
   var deleteID;
   Object.values(lobbies).every(lobby =>{
-      if(this.id == lobby.id){
+      if(ws.id == lobby.id){
         game.removeCrew(lobby);
-        Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
+        Object.values(lobby.sockets).filter(socket => socket.id != ws.id,).forEach(socket =>{
           
         });
         deleteID = lobby.id;
@@ -119,11 +156,11 @@ function onDisconnect() {
     delete lobbies[deleteID]; 
     return;
   }
-  game.removePlayer(this);
+  game.removePlayer(ws);
   Object.values(lobbies).forEach(lobby =>{
     Object.keys(lobby.sockets).forEach(id =>{
       if(this.id == id){
-        lobby.removeMember(this);
+        lobby.removeMember(ws);
         lobby.update();
       }
     });

@@ -45,12 +45,12 @@ class Game {
       const x = Constants.MAP_WIDTH * (Math.random());
       const y = Constants.MAP_HEIGHT * (Math.random());
       this.planets.forEach(planet =>{
-        if(withinRect(x,y,planet,280,280)){
+        if(withinRect(x,y,planet,100,100)){
           generatePosition();
         }
       });
-      this.ships.forEach(planet =>{
-        if(withinRect(x,y,planet,440,440)){
+      this.ships.forEach(ship =>{
+        if(withinRect(x,y,ship,440,440)){
           generatePosition();
         }
       });
@@ -73,7 +73,7 @@ class Game {
     Object.keys(lobby.crew).forEach(id =>{
     this.sockets[id] = lobby.sockets[id];
     this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],this.colors[lobby.colorI]);
-    lobby.sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+    lobby.sockets[id].send(JSON.stringify({message : Constants.MSG_TYPES.CREATOR_JOINED_GAME}));
     lobby.colorI++;
   });
   }
@@ -545,7 +545,7 @@ class Game {
       Object.keys(this.sockets).forEach(playerID => {
         const socket = this.sockets[playerID];
         const player = this.players[playerID];
-        socket.emit(Constants.MSG_TYPES.GAME_UPDATE, this.createUpdate(player, leaderboard));
+        socket.send(JSON.stringify({message : Constants.MSG_TYPES.GAME_UPDATE, update : this.createUpdate(player, leaderboard)}));
       });
       this.shouldSendUpdate = true;
     } else {

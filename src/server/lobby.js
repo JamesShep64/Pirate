@@ -24,8 +24,7 @@ class Lobby{
 
     update(){
         Object.keys(this.sockets).forEach(ID => {
-            const socket = this.sockets[ID];
-            socket.emit(Constants.MSG_TYPES.LOBBY_UPDATE, this.createUpdate());
+            this.sockets[ID].send(JSON.stringify({message : Constants.MSG_TYPES.LOBBY_UPDATE, update : this.createUpdate()}));
           });
     }
     removeMember(socket){
