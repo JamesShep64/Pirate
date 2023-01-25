@@ -5,11 +5,14 @@ const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackConfig = require('../../webpack.dev.js');
 const compiler = webpack(webpackConfig);
-const server = require("http").createServer();
+
 const Constants = require('../shared/constants');
 const Game = require('./game');
 const Lobby = require('./lobby');
 
+app.use(webpackDevMiddleware(compiler));
+
+app.use(express.static('public'));
 
 if (process.env.NODE_ENV === 'development') {
   // Setup Webpack for development
@@ -20,9 +23,8 @@ if (process.env.NODE_ENV === 'development') {
   app.use(express.static('dist'));
 }
 
-const port = process.env.PORT || 3000;
-server.listen(port);
-server.on("request", app.use(express.static("public")));
+const port = process.env.PORT || 443;
+const server = app.listen(port);
 console.log(`Server listening on port ${port}`);
 
 // tell the WebSocket server to use the same HTTP server
