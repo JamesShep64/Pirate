@@ -3,7 +3,7 @@ import { processGameUpdate,processLobbyUpdate } from './state';
 import { joinLobby,creatorJoined } from '.';
 import Constants from '../shared/constants';
 const socketProtocol = (window.location.protocol.includes('https')) ? 'wss' : 'ws';
-   const address =socketProtocol+`://${window.location.host}`
+   const address ='ws'+`://${window.location.host}`
 
    const ws = new WebSocket(address);
 
