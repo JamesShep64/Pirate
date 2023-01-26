@@ -21,6 +21,7 @@ const playButton = document.getElementById('play-button')
 const copyButton = document.getElementById('copy-button');
 const usernameInput = document.getElementById('username-input');
 const lobbyCreator = document.getElementById('lobby-creator');
+const link = document.getElementById('link');
 
 var joinedLobby = false;
 Promise.all([
@@ -46,9 +47,9 @@ Promise.all([
     }
 
   copyButton.onclick = () =>{
-    copyButton.innerHTML = 'LINK COPIED!';
-    copyButton.classList.add('copied');
+    copyButton.innerHTML = 'Link Bellow!';
     global.navigator.clipboard.writeText(window.location.href.toString()+getID());
+    link.innerHTML = window.location.href.toString()+getID();
     console.log(window.location.href.toString()+getID());
   };
 
