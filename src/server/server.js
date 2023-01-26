@@ -28,7 +28,7 @@ const server = app.listen(port);
 console.log(`Server listening on port ${port}`);
 var didJoinLobby = false;
 var lobbyID;
-function createLobbyLink(id,socket){
+function createLobbyLink(id){
   app.get('/'+id,(req,res)=>{
     res.redirect('/');
     didJoinLobby = true;
@@ -56,7 +56,6 @@ io.on('connection', socket => {
   socket.on(Constants.MSG_TYPES.JOIN_GAME, joinGame);
   socket.on(Constants.MSG_TYPES.PRESS, handlePress);
   socket.on(Constants.MSG_TYPES.RELEASE, handleRelease);
-  socket.on(Constants.MSG_TYPES.CLICK, handleClick);
   socket.on(Constants.MSG_TYPES.JOINED_CREW,joinCrew);
   socket.on('disconnect', onDisconnect);
 });
@@ -71,7 +70,7 @@ function joinGame() {
 function createLobby(creator){
   lobbies[creator.socketID] = new Lobby(this,creator.username);
   lobbies[creator.socketID].update();
-  createLobbyLink(creator.socketID,this);
+  createLobbyLink(creator.socketID);
 }
 
 function joinCrew(username){
@@ -90,9 +89,7 @@ function handlePress(key){
 function handleRelease(key){
   game.handleRelease(this,key);
 }
-function handleClick(click){
-  game.handleClick(this,click);
-}
+
 
 function onDisconnect() {
   var creator = false;

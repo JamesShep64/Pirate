@@ -9,9 +9,7 @@ function handlePress(key) {
 function handleRelease(key){
   updateRelease(key);
 }
-function handleClick(x, y){
-  updateClick(x, y);
-}
+
 export function startCapturingInput() {
   window.addEventListener('keypress',e=>{
     handlePress(e.key);
@@ -21,10 +19,7 @@ export function startCapturingInput() {
     handleRelease(e.key);
   })
 
-  window.addEventListener('click', e => {
-    handleClick(e.clientX, e.clientY);
-  });
-  
+
 
 }
 

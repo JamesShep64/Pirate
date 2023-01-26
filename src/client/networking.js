@@ -66,6 +66,4 @@ export const updateRelease = throttle(20, key => {
   socket.emit(Constants.MSG_TYPES.RELEASE, key);
 });
 
-export const updateClick = throttle(20, (x, y) => {
-  socket.emit(Constants.MSG_TYPES.CLICK, {x,y, canvasWidth: canvas.width, canvasHeight: canvas.height});
-});
+

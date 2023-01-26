@@ -49,6 +49,7 @@ Promise.all([
     copyButton.innerHTML = 'LINK COPIED!';
     copyButton.classList.add('copied');
     navigator.clipboard.writeText(window.location.href.toString()+getID());
+    console.log(window.location.href.toString()+getID());
   };
 
   playButton.onclick = () => {

@@ -111,20 +111,7 @@ class Game {
     }
   }
 
-  handleClick(socket,click){
-    var c = this.cursors[socket.id];
-    const x = click.x + this.players[socket.id].pos.x - click.canvasWidth/2;
-    const y = click.y + this.players[socket.id].pos.y - click.canvasHeight/2;
-    this.ships.forEach(ship=>{
-      if(Math.sqrt((x - ship.pos.x) * (x - ship.pos.x) + (y - ship.pos.y) * (y - ship.pos.y)) < ship.radius){
-        c.selected = ship;
-      }
-      else{
-        c.selected = null;
-      }
 
-    });
-  }
 
   createMap(){
     for(var x =-400; x < Constants.MAP_WIDTH + 900; x+=900){
