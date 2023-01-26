@@ -34,8 +34,6 @@ class Game {
     this.seenGrapples = [];
     this.lastUpdateTime = Date.now();
     this.shouldSendUpdate = true;
-    this.colors = ['red','blue','green','orange'];
-
     this.createMap();
     setInterval(this.update.bind(this), 1000 / 30);
   }
@@ -45,12 +43,12 @@ class Game {
       const x = Constants.MAP_WIDTH * (Math.random());
       const y = Constants.MAP_HEIGHT * (Math.random());
       this.planets.forEach(planet =>{
-        if(withinRect(x,y,planet,100,100)){
+        if(withinRect(x,y,planet,280,280)){
           generatePosition();
         }
       });
-      this.ships.forEach(ship =>{
-        if(withinRect(x,y,ship,440,440)){
+      this.ships.forEach(planet =>{
+        if(withinRect(x,y,planet,440,440)){
           generatePosition();
         }
       });
@@ -58,7 +56,7 @@ class Game {
     }
     const {x,y} = generatePosition();
     this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+((Math.random() * 255) - 50).toString()+","+((Math.random() * 255) - 50).toString()+','+((Math.random() * 255) - 50).toString()+')',lobby.creator,this));
-    lobby.ship = this.ships[this.ships.length-1];
+    lobby.addShip(this.teamID.toString());
     if(x > Constants.MAP_WIDTH/2){
       this.ships[this.ships.length-1].turn = -1;
     }
@@ -70,19 +68,18 @@ class Game {
     this.blockID++;
     this.teamID++;
 
+    var i = 0;
+    var colors = ['red','blue','green','orange'];
     Object.keys(lobby.crew).forEach(id =>{
     this.sockets[id] = lobby.sockets[id];
-    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],this.colors[lobby.colorI]);
-    lobby.sockets[id].send(JSON.stringify({message : Constants.MSG_TYPES.CREATOR_JOINED_GAME}));
-    lobby.colorI++;
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],colors[i]);
+    lobby.sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+    i++;
   });
   }
 
-  addStragler(socket,username,lobby){
-    this.sockets[socket.id] = socket;
-    this.players[socket.id] = new PlayerObject(socket.id, username, 0, 0,PLAYER_SIZE, PLAYER_SIZE,lobby.ship,this.colors[lobby.colorI]);
-    this.players[socket.id].spawn();
-    lobby.colorI++;
+  addStragler(socket,lobby){
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],colors[i]);
   }
 
   removePlayer(socket) {
@@ -112,6 +109,21 @@ class Game {
     if(this.players[socket.id]){
       this.players[socket.id].handleRelease(key);
     }
+  }
+
+  handleClick(socket,click){
+    var c = this.cursors[socket.id];
+    const x = click.x + this.players[socket.id].pos.x - click.canvasWidth/2;
+    const y = click.y + this.players[socket.id].pos.y - click.canvasHeight/2;
+    this.ships.forEach(ship=>{
+      if(Math.sqrt((x - ship.pos.x) * (x - ship.pos.x) + (y - ship.pos.y) * (y - ship.pos.y)) < ship.radius){
+        c.selected = ship;
+      }
+      else{
+        c.selected = null;
+      }
+
+    });
   }
 
   createMap(){
@@ -545,7 +557,7 @@ class Game {
       Object.keys(this.sockets).forEach(playerID => {
         const socket = this.sockets[playerID];
         const player = this.players[playerID];
-        socket.send(JSON.stringify({message : Constants.MSG_TYPES.GAME_UPDATE, update : this.createUpdate(player, leaderboard)}));
+        socket.emit(Constants.MSG_TYPES.GAME_UPDATE, this.createUpdate(player, leaderboard));
       });
       this.shouldSendUpdate = true;
     } else {

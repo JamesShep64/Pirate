@@ -8,8 +8,7 @@ class Lobby{
         this.crew[socket.id] = username;
         this.sockets[socket.id] = socket;
         this.firstUpdate = true;
-        this.ship;
-        this.colorI = 0;
+        this.shipID;
     }
 
     addMember(socket){
@@ -24,8 +23,12 @@ class Lobby{
 
     update(){
         Object.keys(this.sockets).forEach(ID => {
-            this.sockets[ID].send(JSON.stringify({message : Constants.MSG_TYPES.LOBBY_UPDATE, update : this.createUpdate()}));
+            const socket = this.sockets[ID];
+            socket.emit(Constants.MSG_TYPES.LOBBY_UPDATE, this.createUpdate());
           });
+    }
+    addShip(id){
+        this.shipID = id;
     }
     removeMember(socket){
         if(this.crew[socket.id]){
