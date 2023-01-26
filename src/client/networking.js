@@ -4,7 +4,7 @@ import { joinLobby,creatorJoined } from '.';
 import Constants from '../shared/constants';
 const socketProtocol = (window.location.protocol.includes('https')) ? 'wss' : 'ws';
    const address =socketProtocol+`://${window.location.host}`
-
+    console.log(address);
    const ws = new WebSocket(address);
 
    const connectedPromise = new Promise(resolve => {
