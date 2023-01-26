@@ -48,7 +48,7 @@ Promise.all([
   copyButton.onclick = () =>{
     copyButton.innerHTML = 'LINK COPIED!';
     copyButton.classList.add('copied');
-    navigator.clipboard.writeText(window.location.href.toString()+getID());
+    global.navigator.clipboard.writeText(window.location.href.toString()+getID());
     console.log(window.location.href.toString()+getID());
   };
 
