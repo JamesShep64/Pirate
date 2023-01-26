@@ -3,7 +3,7 @@ import { processGameUpdate,processLobbyUpdate } from './state';
 import { joinLobby,creatorJoined } from '.';
 import Constants from '../shared/constants';
 const socketProtocol = (window.location.protocol.includes('https')) ? 'wss' : 'ws';
-   const address =socketProtocol+`://${window.location.host}`;
+   var address =socketProtocol+`://${window.location.host}`;
    if(address !='ws:\/\/localhost:3000'){
     address += ':3000';
    }
