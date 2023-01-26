@@ -48,7 +48,6 @@ Promise.all([
 
   copyButton.onclick = () =>{
     copyButton.innerHTML = 'Link Bellow!';
-    global.navigator.clipboard.writeText(window.location.href.toString()+getID());
     link.innerHTML = window.location.href.toString()+getID();
     console.log(window.location.href.toString()+getID());
   };
