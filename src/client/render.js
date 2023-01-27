@@ -81,6 +81,7 @@ function render() {
   //draw me
   if(!me.dead){
     drawPoly(me,me);
+    console.log(me.color);
     context.fillStyle = me.color;
     context.fill();
   }

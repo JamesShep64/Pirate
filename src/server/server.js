@@ -77,6 +77,10 @@ function joinCrew(username){
   Object.values(lobbies).forEach(lobby =>{
     Object.keys(lobby.sockets).forEach(id =>{
       if(this.id == id){
+        if(lobby.ship){
+          game.addStragler(this,username,lobby);
+          this.emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
+        }
         lobby.addCrew(this,username);
         lobby.update();
       }

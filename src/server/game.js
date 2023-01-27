@@ -34,6 +34,8 @@ class Game {
     this.seenGrapples = [];
     this.lastUpdateTime = Date.now();
     this.shouldSendUpdate = true;
+    this.colors =['red','blue','green','orange'];
+
     this.createMap();
     setInterval(this.update.bind(this), 1000 / 30);
   }
@@ -56,7 +58,7 @@ class Game {
     }
     const {x,y} = generatePosition();
     this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+((Math.random() * 255) - 50).toString()+","+((Math.random() * 255) - 50).toString()+','+((Math.random() * 255) - 50).toString()+')',lobby.creator,this));
-    lobby.addShip(this.teamID.toString());
+    lobby.ship = this.ships[this.ships.length-1];
     if(x > Constants.MAP_WIDTH/2){
       this.ships[this.ships.length-1].turn = -1;
     }
@@ -68,18 +70,18 @@ class Game {
     this.blockID++;
     this.teamID++;
 
-    var i = 0;
-    var colors = ['red','blue','green','orange'];
     Object.keys(lobby.crew).forEach(id =>{
     this.sockets[id] = lobby.sockets[id];
-    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],colors[i]);
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],this.colors[lobby.colorI]);
     lobby.sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
-    i++;
+    lobby.colorI++;
   });
   }
-
-  addStragler(socket,lobby){
-    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],colors[i]);
+  addStragler(socket,username,lobby){
+    this.sockets[socket.id] = socket;
+    this.players[socket.id] = new PlayerObject(socket.id, username, 0, 0,PLAYER_SIZE, PLAYER_SIZE,lobby.ship,this.colors[lobby.colorI]);
+    this.players[socket.id].spawn();
+    lobby.colorI++;
   }
 
   removePlayer(socket) {
