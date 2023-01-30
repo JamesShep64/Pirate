@@ -1,9 +1,8 @@
-// Learn more about this file at:
-// https://victorzhou.com/blog/build-an-io-game-part-1/#5-client-rendering
 import { debounce } from 'throttle-debounce';
 import constants, { PLAYER_SIZE } from '../shared/constants';
 import { getAsset } from './assets';
 import { getCurrentState } from './state';
+import Vector from './vector';
 
 const Constants = require('../shared/constants');
 
@@ -19,8 +18,8 @@ function setCanvasDimensions() {
   // On small screens (e.g. phones), we want to "zoom out" so players can still see at least
   // 800 in-game units of width.
   const scaleRatio = Math.max(1, 800 / window.innerWidth);
-  canvas.width = scaleRatio * window.innerWidth;
-  canvas.height = scaleRatio * window.innerHeight;
+  canvas.width = 1.5 * scaleRatio * window.innerWidth;
+  canvas.height = 1.5 * scaleRatio * window.innerHeight;
 }
 
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
@@ -39,19 +38,12 @@ function render() {
   planets.forEach(planet => drawPoly(planet,me));
 
   //draw ship hulls
-  
   ships.forEach(ship =>{
-    drawPoly(ship,me);
-    context.fillStyle = '#52300d';
-    context.fill();
+    drawShip(ship,me);
     context.fillStyle = 'black';
   });
 
 
-  //draw ship damage
-  ships.forEach(ship =>{  
-    drawShipDamage(ship,me);
-  });
 
   //draw ship parts
   ships.forEach(ship =>{
@@ -81,7 +73,6 @@ function render() {
   //draw me
   if(!me.dead){
     drawPoly(me,me);
-    console.log(me.color);
     context.fillStyle = me.color;
     context.fill();
   }
@@ -173,6 +164,150 @@ function drawPoly(block, me){
     }
     context.closePath();
     context.stroke();
+}
+
+function drawShip(ship,me){
+  var canvasX = canvas.width / 2 + ship.x - me.eyesX;
+  var canvasY = canvas.height / 2 + ship.y - me.eyesY;
+  context.restore();
+  var o;
+  context.beginPath();
+  var damageCurves = [];
+  for(var i = 0; i<ship.points.length; i++){
+    o = i + 1;
+    if(o == ship.points.length){
+      o = 0;
+    }
+    var surface = new Vector(ship.points[o].x - ship.points[i].x, ship.points[o].y - ship.points[i].y).unit();
+    var perp = new Vector((ship.points[o].y - ship.points[i].y), -(ship.points[o].x - ship.points[i].x)).unit();
+    if(i == 0){
+    context.moveTo(canvasX + ship.points[i].x, canvasY + ship.points[i].y);
+    ship.damages.filter(damage =>damage.surface == i,).sort((a,b) =>{
+      if(Math.abs((a.point.x - ship.points[i].x) * (a.point.y - ship.points[i].y)) < Math.abs((b.point.x - ship.points[i].x) * (b.point.y - ship.points[i].y))){
+        return -1;
+      }
+      return 1;
+    }).forEach(damage =>{
+      var startX = canvasX + damage.point.x - 10 * surface.x;
+      var startY = canvasY + damage.point.y - 10 * surface.y;
+      var endX = canvasX + damage.point.x - 10 * perp.x;
+      var endY = canvasY + damage.point.y - 10 * perp.y;
+      var cp1X = startX - perp.x * 10 * .552;
+      var cp1Y = startY - perp.y * 10 * .552;
+      var cp2X = endX - surface.x * 10 * .552;
+      var cp2Y = endY - surface.y * 10 * .552;
+      if(damage.health == 0){
+        context.lineTo(startX, startY);
+        context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,endX,endY);
+      }
+      
+      var startX2 = endX;
+      var startY2 = endY;
+      var endX2 = canvasX + damage.point.x + 10 * surface.x;
+      var endY2 = canvasY + damage.point.y + 10 * surface.y;
+      var cp1X2 = startX2 + surface.x * 10 * .552;
+      var cp1Y2 = startY2 + surface.y * 10 * .552;
+      var cp2X2 = endX2 - perp.x * 10 * .552;
+      var cp2Y2 = endY2 - perp.y * 10 * .552;
+      if(damage.health > 0){
+        damageCurves.push({start : new Vector(startX,startY), curve1 : [cp1X,cp1Y,cp2X,cp2Y,endX,endY], curve2 : [cp1X2,cp1Y2,cp2X2,cp2Y2,endX2,endY2], health : damage.health});
+      }
+      else{
+        context.bezierCurveTo(cp1X2,cp1Y2,cp2X2,cp2Y2,endX2,endY2);
+      }
+    });
+    }
+    else if(i != ship.points.length - 1){
+    context.lineTo(canvasX + ship.points[i].x, canvasY + ship.points[i].y);
+    ship.damages.filter(damage =>damage.surface == i,).sort((a,b) =>{
+      if(Math.abs((a.point.x - ship.points[i].x) * (a.point.y - ship.points[i].y)) < Math.abs((b.point.x - ship.points[i].x) * (b.point.y - ship.points[i].y))){
+        return -1;
+      }
+      return 1;
+    }).forEach(damage =>{
+      var startX = canvasX + damage.point.x - 10 * surface.x;
+      var startY = canvasY + damage.point.y - 10 * surface.y;
+      var endX = canvasX + damage.point.x - 10 * perp.x;
+      var endY = canvasY + damage.point.y - 10 * perp.y;
+      var cp1X = startX - perp.x * 10 * .552;
+      var cp1Y = startY - perp.y * 10 * .552;
+      var cp2X = endX - surface.x * 10 * .552;
+      var cp2Y = endY - surface.y * 10 * .552;
+      if(damage.health == 0){
+        context.lineTo(startX, startY);
+        context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,endX,endY);
+      }
+      
+      var startX2 = endX;
+      var startY2 = endY;
+      var endX2 = canvasX + damage.point.x + 10 * surface.x;
+      var endY2 = canvasY + damage.point.y + 10 * surface.y;
+      var cp1X2 = startX2 + surface.x * 10 * .552;
+      var cp1Y2 = startY2 + surface.y * 10 * .552;
+      var cp2X2 = endX2 - perp.x * 10 * .552;
+      var cp2Y2 = endY2 - perp.y * 10 * .552;
+      if(damage.health > 0){
+        damageCurves.push({start : new Vector(startX,startY), curve1 : [cp1X,cp1Y,cp2X,cp2Y,endX,endY], curve2 : [cp1X2,cp1Y2,cp2X2,cp2Y2,endX2,endY2], health : damage.health});
+      }
+      else{
+        context.bezierCurveTo(cp1X2,cp1Y2,cp2X2,cp2Y2,endX2,endY2);
+      }
+    });
+    }
+    if(i == ship.points.length - 1){
+      context.lineTo(canvasX + ship.points[i].x, canvasY + ship.points[i].y);
+      ship.damages.filter(damage =>damage.surface == i,).sort((a,b) =>{
+        if(Math.abs((a.point.x - ship.points[i].x) * (a.point.y - ship.points[i].y)) < Math.abs((b.point.x - ship.points[i].x) * (b.point.y - ship.points[i].y))){
+          return -1;
+        }
+        return 1;
+      }).forEach(damage =>{
+      var startX = canvasX + damage.point.x - 10 * surface.x;
+      var startY = canvasY + damage.point.y - 10 * surface.y;
+      var endX = canvasX + damage.point.x - 10 * perp.x;
+      var endY = canvasY + damage.point.y - 10 * perp.y;
+      var cp1X = startX - perp.x * 10 * .552;
+      var cp1Y = startY - perp.y * 10 * .552;
+      var cp2X = endX - surface.x * 10 * .552;
+      var cp2Y = endY - surface.y * 10 * .552;
+      if(damage.health == 0){
+        context.lineTo(startX, startY);
+        context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,endX,endY);
+      }
+      
+      var startX2 = endX;
+      var startY2 = endY;
+      var endX2 = canvasX + damage.point.x + 10 * surface.x;
+      var endY2 = canvasY + damage.point.y + 10 * surface.y;
+      var cp1X2 = startX2 + surface.x * 10 * .552;
+      var cp1Y2 = startY2 + surface.y * 10 * .552;
+      var cp2X2 = endX2 - perp.x * 10 * .552;
+      var cp2Y2 = endY2 - perp.y * 10 * .552;
+      if(damage.health > 0){
+        damageCurves.push({start : new Vector(startX,startY), curve1 : [cp1X,cp1Y,cp2X,cp2Y,endX,endY], curve2 : [cp1X2,cp1Y2,cp2X2,cp2Y2,endX2,endY2], health : damage.health});
+      }
+      else{
+        context.bezierCurveTo(cp1X2,cp1Y2,cp2X2,cp2Y2,endX2,endY2);
+      }        
+      });
+      context.lineTo(canvasX + ship.points[0].x, canvasY + ship.points[0].y);
+    }
+  }
+  context.closePath();
+  context.fillStyle = '#52300d';
+  context.fill();
+  damageCurves.forEach(curve =>{
+    context.beginPath();
+    context.moveTo(curve.start.x, curve.start.y);
+    context.bezierCurveTo(curve.curve1[0],curve.curve1[1],curve.curve1[2],curve.curve1[3],curve.curve1[4],curve.curve1[5]);
+    context.bezierCurveTo(curve.curve2[0],curve.curve2[1],curve.curve2[2],curve.curve2[3],curve.curve2[4],curve.curve2[5]);
+    context.lineTo(curve.start.x,curve.start.y);
+    context.closePath();
+    context.globalAlpha = 1 - (curve.health/300);
+    context.fillStyle = 'red';
+    context.fill();
+  });
+  context.globalAlpha = 1;
 }
 
 function drawCannonWire(points,me,x,y){
@@ -304,17 +439,6 @@ function drawShipParts(ship,player){
       */
 }
 
-function drawShipDamage(ship,player){
-  for(var i = 0; i < ship.damages.length; i++){
-    var canvasX = canvas.width / 2 + ship.x + ship.damages[i].x - player.eyesX;
-    var canvasY = canvas.height / 2 + ship.y + ship.damages[i].y - player.eyesY;
-    context.beginPath();
-    context.arc(canvasX, canvasY, 10, 0, 2*Constants.PI);
-    context.fillStyle = '#34cceb';
-    context.fill();
-    context.fillStyle = 'black';
-  }
-}
 
 function drawCannonBall(cannonBall,player){
     var canvasX = canvas.width / 2 + cannonBall.x - player.eyesX;

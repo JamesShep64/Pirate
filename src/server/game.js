@@ -95,7 +95,7 @@ class Game {
       delete this.players[id];
     });
     for(var i = 0;i<this.ships.length;i++){
-      if(this.ships[i] == lobby.shipID){
+      if(this.ships[i] == lobby.ship){
         this.ships.splice(i,1);
       }
     }
@@ -420,8 +420,8 @@ class Game {
           if(ship.cannonBalls[id]){
             var collision = cannonBallShipCollision(ship.cannonBalls[id],otherShip);
             if(collision){
+              otherShip.takeDamage(collision.u, collision.j,ship.cannonBalls[id].power);
               delete ship.cannonBalls[id];
-              otherShip.takeDamage(collision.u, collision.j);
             }
           }
         });

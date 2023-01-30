@@ -101,7 +101,9 @@ class PirateShip extends Polygon{
 
     //Takedamage 
     this.damages = [];
-
+    this.explosions = [];
+    this.explosionID = 1;
+    
     //player spawn 
     this.spawnPoint1 = new Polygon([new Vector(this.points[4].x + 25,this.points[4].y - 25)]);
     this.spawnPoint2 = new Polygon([new Vector(70,-45)]);
@@ -124,7 +126,7 @@ class PirateShip extends Polygon{
         }
       });
       this.game.ships.forEach(planet =>{
-        if(withinRect(x,y,planet,800,800)){
+        if(withinRect(x,y,planet,500,500)){
           generatePosition();
         }
       });
@@ -237,7 +239,7 @@ class PirateShip extends Polygon{
 
     //damage torque
     for(var i = 0; i < this.damages.length; i++){
-      this.torque -= (this.damages[i].x)/1500;
+      this.torque -= (this.damages[i].point.x)/1500;
     }
 
     if(!this.inOrbit){
@@ -411,11 +413,11 @@ class PirateShip extends Polygon{
       }
 
       for(var i = 0; i<this.damages.length;i++){
-          var x = this.damages[i].x;
-          var y = this.damages[i].y;
-          this.damages[i].x = x * cos - y * sin;
-          this.damages[i].y = y * cos + x * sin;
-      }
+        var x = this.damages[i].point.x;
+        var y = this.damages[i].point.y;
+        this.damages[i].point.x = x * cos - y * sin;
+        this.damages[i].point.y = y * cos + x * sin;
+    }
 
       for(var i = 0; i<this.trapDoor.collisionZeros.length;i++){
         if(this.trapDoor.collisionZeros[i] != 'a'){
@@ -478,17 +480,34 @@ class PirateShip extends Polygon{
     }
     var no = false;
     var surface = new Vector(this.points[o].x - this.points[j].x, this.points[o].y - this.points[j].y);
+    if(j == 9 || j == 1 || j == 7 || j == 13){
+      u = .5;
+    }
+    else{
+      if(Math.abs(this.points[j].x + (surface.x) * u - this.points[j].x) < 10){
+        var signX = this.points[o].x - this.points[j].x > 0 ? 1 : -1;
+        u = 1 - ((this.points[o].x - (this.points[j].x + signX * 10))/surface.x); 
+      }
+      if(Math.abs(this.points[j].x + (surface.x) * u - this.points[o].x) < 10){
+        var signX = this.points[o].x - this.points[j].x > 0 ? 1 : -1;
+        u = ((this.points[o].x - signX * 10) - this.points[j].x)/surface.x; 
+      }
+  }
     var damage = new Vector(this.points[j].x +(surface.x) * u, this.points[j].y + (surface.y) * u);
     for(var i = 0; i < this.damages.length; i++){
-      if(damage.x < this.damages[i].x + 10 && damage.x > this.damages[i].x - 10 && damage.y < this.damages[i].y + 10 && damage.y > this.damages[i].y - 10){
+      if(damage.x < this.damages[i].point.x + 20 && damage.x > this.damages[i].point.x - 20 && damage.y < this.damages[i].point.y + 20 && damage.y > this.damages[i].point.y - 20){
+        this.damages[i].health -= power;
+        if(this.damages[i].health < 0)
+          this.damages[i].health = 0;
         no = true;
       }
     }
     if(!no){
-      this.damages.push(damage);
+      this.damages.push({point : damage, surface : j, health : 300 - power});
       //this.explosions[this.explosionID] = new Explosion(this.pos.x + damage.x, this.pos.y + damage.y,power,surface,this,this.explosionID);
-      this.explosionID += 'a';
+      //this.explosionID += 'a';
     }
+    
   }
 
   serializeForUpdate() {
