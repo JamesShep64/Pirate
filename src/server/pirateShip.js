@@ -179,6 +179,12 @@ class PirateShip extends Polygon{
         delete this.cannonBalls[id];
       }
     });
+
+    //update damages
+    Object.values(this.explosions).forEach(e =>{
+      e.update(dt);
+    });
+    
     if(this.outOfBounds && !this.dead){
       this.outOfBoundsTimer += dt;
       if(this.outOfBoundsTimer > 6){
@@ -494,6 +500,9 @@ class PirateShip extends Polygon{
       }
   }
     var damage = new Vector(this.points[j].x +(surface.x) * u, this.points[j].y + (surface.y) * u);
+    this.explosions[this.explosionID] = new Explosion(this.explosionID, this.pos.x + damage.x, this.pos.y + damage.y,power,surface,damage,this);
+    this.explosionID += 'a';
+
     for(var i = 0; i < this.damages.length; i++){
       if(damage.x < this.damages[i].point.x + 20 && damage.x > this.damages[i].point.x - 20 && damage.y < this.damages[i].point.y + 20 && damage.y > this.damages[i].point.y - 20){
         this.damages[i].health -= power;
@@ -504,8 +513,6 @@ class PirateShip extends Polygon{
     }
     if(!no){
       this.damages.push({point : damage, surface : j, health : 300 - power});
-      //this.explosions[this.explosionID] = new Explosion(this.pos.x + damage.x, this.pos.y + damage.y,power,surface,this,this.explosionID);
-      //this.explosionID += 'a';
     }
     
   }
@@ -519,6 +526,7 @@ class PirateShip extends Polygon{
       col : this.isCol,
       points: this.points,
       damages: this.damages,
+      explosions : Object.values(this.explosions).map( e => e.serializeForUpdate()),
       cannon1 : this.cannon1.serializeForUpdate(),
       cannonLower1 : this.cannonLower1.serializeForUpdate(),
       cannonLower2 : this.cannonLower2.serializeForUpdate(),

@@ -323,6 +323,22 @@ class Game {
             ship.hasPlayers[player.id] = player; 
             }
         }
+        //player explosion colision
+        Object.values(ship.explosions).filter(e => e.hitboxExist < 3).forEach(e =>{
+          if(player.withinRect(e,e.radius,e.radius)){
+            if(player.distanceTo(e) < player.radius + e.radius){
+              var d = new Vector(player.pos.x - (e.point.x + ship.pos.x), player.pos.y - (e.point.y + ship.pos.y)).unit();
+              var p = new Vector(e.surface.y, -e.surface.x).unit();
+              p.add(d);
+              player.boom(p.unit());             
+              player.withinShip = false;
+              player.shipWithin = null;
+              player.setMove(new Vector(1,0));
+              player.rotateTo(0);
+          
+            }
+          }
+        });
     });
       //PLAYER LADDER FIX
       if(!player.didOnLadder){
@@ -404,16 +420,21 @@ class Game {
             this.blocks[id].displace.add(push);
         }
       });
-      Object.keys(this.blocks).forEach(id =>{
-        this.planets.forEach(planet =>{
-          var happened = blockCollision(this.blocks[id],planet);
-          if(happened){
-            var {push} = happened;
-            this.blocks[id].displace.add(push);
+      
+      //block explosion collision 
+      Object.values(this.blocks).forEach(block =>{
+        Object.values(ship.explosions).filter(e => e.hitboxExist < 3).forEach(e =>{
+          if(block.withinRect(e,e.radius,e.radius)){
+            if(block.distanceTo(e) < block.radius + e.radius){
+              var d = new Vector(block.pos.x - (e.point.x + ship.pos.x), block.pos.y - (e.point.y + ship.pos.y)).unit();
+              var p = new Vector(e.surface.y, -e.surface.x).unit();
+              p.add(d);
+              block.boom(p.unit());             
+              }
           }
         });
       });
-  
+      
       //cannon ball ship collision
       Object.keys(ship.cannonBalls).forEach(id =>{
         this.ships.filter(player => !player.dead,).forEach(otherShip =>{
@@ -525,6 +546,17 @@ class Game {
 
         if(swaped){[id, id2] = [id2, id];}
         comboCol[id].push(id2);
+      }
+    });
+  });
+
+  //block planet collision
+  Object.keys(this.blocks).forEach(id =>{
+    this.planets.forEach(planet =>{
+      var happened = blockCollision(this.blocks[id],planet);
+      if(happened){
+        var {push} = happened;
+        this.blocks[id].displace.add(push);
       }
     });
   });

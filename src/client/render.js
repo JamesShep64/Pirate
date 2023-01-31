@@ -98,6 +98,20 @@ function render() {
     context.fillStyle = 'black';
   });
 
+  //draw Explosions
+  ships.forEach(ship =>{
+      ship.explosions.filter(e => e,).forEach(explosion =>{
+        console.log(ship.explosions);
+        var canvasX = canvas.width / 2 +  explosion.x - me.eyesX;
+        var canvasY = canvas.height / 2 + explosion.y - me.eyesY;
+        context.beginPath();
+        context.arc(canvasX, canvasY, explosion.radius, 0, 2*Constants.PI);
+        context.fillStyle = 'red';
+        context.fill();
+      });
+    });
+    context.fillStyle = 'black';
+
   //draw text
   context.globalAlpha = .6;
   context.font = "400px serif";
@@ -115,7 +129,7 @@ function renderBackground(playerX, playerY){
     for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=20){
       x = Math.ceil(x / 20) * 20;
       y = Math.ceil(y/20) * 20;
-      if((x % 1980 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && (x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 860 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0))){
+      if((x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && (x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 860 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0))){
         context.save();
         context.translate(canvas.width / 2 - playerX + x, canvas.height / 2 - playerY + y);
         context.beginPath();

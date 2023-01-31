@@ -35,6 +35,7 @@ class PlayerObject extends Polygon{
     this.jump = new Vector(0,1);
     this.friction = new Vector(0,0);
     this.jumpVel = new Vector(0,0);
+    this.boomVel = new Vector(0,0);
     this.movingRight = false;
     this.movingLeft = false;
     this.movingUp = false;
@@ -147,9 +148,9 @@ class PlayerObject extends Polygon{
         }
         this.gvel.x += dt * this.gravity.x * this.gravityMult * 5;
         this.gvel.y += dt * this.gravity.y * this.gravityMult * 5;
-        if(this.gvel.x + this.gvel.y > 125){
-          this.gvel.y = 125 * this.gravity.y;
-          this.gvel.x = 125 * this.gravity.x;
+        if(this.gvel.x + this.gvel.y > 200){
+          this.gvel.y = 200 * this.gravity.y;
+          this.gvel.x = 200 * this.gravity.x;
         }
 
         //ladder Movment    
@@ -163,8 +164,8 @@ class PlayerObject extends Polygon{
         this.netVelocity.x = 0;
         this.netVelocity.y = 0;
         if(!this.onTelescope){
-          this.netVelocity.x += this.horizMove.x + this.vertMove.x;
-          this.netVelocity.y += this.horizMove.y + this.vertMove.y;
+          this.netVelocity.x += this.horizMove.x + this.vertMove.x + this.boomVel.x;
+          this.netVelocity.y += this.horizMove.y + this.vertMove.y + this.boomVel.y;
         }
 
         this.netVelocity.x += this.gvel.x + this.friction.x + this.jumpVel.x;
@@ -210,12 +211,18 @@ class PlayerObject extends Polygon{
   applyFriction(vec,dont){
     this.friction.x = vec.x;
     this.friction.y = vec.y;
+    this.boomVel.x = 0;
+    this.boomVel.y = 0;
     if(!dont){
       this.jumpVel.x = 0;
       this.jumpVel.y = 0;
     }
   }
 
+  boom(vec){
+    this.boomVel.x = vec.x * 60;
+    this.boomVel.y = vec.y * 60;
+  }
   turnGravity(b){
     if(b){
       this.gravityMult = 15;
