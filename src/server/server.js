@@ -96,22 +96,26 @@ function handleRelease(key){
 
 
 function onDisconnect() {
-  var creator = false;
-  var deleteID;
   Object.values(lobbies).every(lobby =>{
       if(this.id == lobby.id){
-        game.removeCrew(lobby);
-        Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
-        });
-        deleteID = lobby.id;
-        creator = true;
-        return false;
+        if(Object.keys(lobby.crew).length == 1){
+          game.removeCrew(lobby);
+          Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
+            socket.emit(Constants.MSG_TYPES.CREATOR_LEFT_GAME);
+          });
+          delete lobbies[this.id]; 
+          return;
+       }
+       else{
+        var fresh = lobbies[this.id];
+        game.removePlayer(this);
+        lobby.removeLeader(this);
+        delete lobbies[this.id];
+        lobbies[fresh.id] = fresh;
+        return;
+       }
       }
   });
-  if(creator){
-    delete lobbies[deleteID]; 
-    return;
-  }
   game.removePlayer(this);
   Object.values(lobbies).forEach(lobby =>{
     Object.keys(lobby.sockets).forEach(id =>{
@@ -120,5 +124,4 @@ function onDisconnect() {
       }
     });
   });
-
 }

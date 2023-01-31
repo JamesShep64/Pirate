@@ -3,7 +3,7 @@
 import io from 'socket.io-client';
 import { throttle } from 'throttle-debounce';
 import { processGameUpdate,processLobbyUpdate } from './state';
-import { joinLobby,creatorJoined } from '.';
+import { joinLobby,creatorJoined,becomeLeader } from '.';
 
 const canvas = document.getElementById('game-canvas');
 const Constants = require('../shared/constants');
@@ -37,6 +37,7 @@ export const connect = onGameOver => (
       console.log('disconnected');
       disconnect();
     });
+    socket.on(Constants.MSG_TYPES.BECOME_LEADER,()=>{becomeLeader();console.log('LLL')});
   })
 );
 export const play = username => {
@@ -58,6 +59,7 @@ export const createLobby = (username) =>{
 export const joinCrew = (username) =>{
   socket.emit(Constants.MSG_TYPES.JOINED_CREW,username);
 };
+
 export const updatePress = throttle(20, key => {
   socket.emit(Constants.MSG_TYPES.PRESS, key);
 });

@@ -79,3 +79,8 @@ export function creatorJoined(){
   startCapturingInput();
   startRendering();
 }
+
+export function becomeLeader(){
+  playButton.classList.remove('hidden');
+  console.log('a');
+}

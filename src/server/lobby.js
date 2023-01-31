@@ -1,3 +1,4 @@
+const { MSG_TYPES } = require('../shared/constants');
 const Constants = require('../shared/constants')
 class Lobby{
     constructor(socket,username){
@@ -34,6 +35,17 @@ class Lobby{
             delete this.crew[socket.id];
         }
         delete this.sockets[socket.id];
+        this.update();
+    }
+    removeLeader(socket){
+        if(this.crew[socket.id]){
+            delete this.crew[socket.id];
+        }
+        delete this.sockets[socket.id];
+        var newLeader = Object.keys(this.crew)[0];
+        this.creator = this.crew[newLeader];
+        this.id = newLeader;
+        this.sockets[newLeader].emit(Constants.MSG_TYPES.BECOME_LEADER); 
         this.update();
     }
     createUpdate(){
