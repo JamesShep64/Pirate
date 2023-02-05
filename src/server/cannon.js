@@ -198,7 +198,7 @@ class Cannon{
             this.cannonBallID++;
         }
         else{
-            this.ship.continueGrapple = true;
+            //this.ship.continueGrapple = true;
         }
     }
 

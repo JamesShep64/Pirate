@@ -30,6 +30,7 @@ class Explosion{
             y : this.pos.y,
             radius : this.radius,
             hitBoxExist : this.hitboxExist,
+            timer : this.timer,
         }
     }
 }

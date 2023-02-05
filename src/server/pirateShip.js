@@ -47,6 +47,8 @@ class PirateShip extends Polygon{
     
     if(type == 'gallion'){
       this.collisionZeros = [new Vector(-180, -10), new Vector(-50, -15), new Vector(-45, -10), 'a', 'a', 'a', 'a', new Vector(45, -10), new Vector(50, -15), new Vector(150, 20), new Vector(180, -20), new Vector(85, 85), new Vector(-85, 85), new Vector(-180, -20)];
+      this.collisionZero1 = new Vector(-50,-15);
+      this.collisionZero8 = new Vector(50,-15);
       this.trapDoor = new TrapDoor(this);
       this.ladder = new Ladder(this, [new Vector(-5,0), new Vector(5,0), new Vector(5,55), new Vector(-5,55)]);
       this.mast = new Ladder(this, [new Vector(70,-30), new Vector(55,-30), new Vector(55,-160), new Vector(70,-160)]);
@@ -98,6 +100,7 @@ class PirateShip extends Polygon{
     this.turn = 1;
     this.tangent = new Vector(0,0);
     this.continued = false;
+    this.oneAsteroid = false;
 
     //Takedamage 
     this.damages = [];
@@ -118,15 +121,15 @@ class PirateShip extends Polygon{
 
   spawn(){
     const generatePosition = () => {
-      const x = Constants.MAP_WIDTH * (Math.random() * 0.5);
-      const y = Constants.MAP_HEIGHT * (Math.random() * 0.5);
+      const x = Constants.MAP_WIDTH * (.2 + .8*Math.random());
+      const y = Constants.MAP_HEIGHT * (.2 + .8*Math.random());
       this.game.planets.forEach(planet =>{
-        if(withinRect(x,y,planet,500,300)){
+        if(withinRect(x,y,planet,500,280)){
           generatePosition();
         }
       });
       this.game.ships.forEach(planet =>{
-        if(withinRect(x,y,planet,500,500)){
+        if(withinRect(x,y,planet,440,440)){
           generatePosition();
         }
       });
@@ -258,7 +261,29 @@ class PirateShip extends Polygon{
     }
     //trap door update
     this.trapDoor.update(dt);
+    
+    //give asteroid speed
+    if(this.onAsteroid){
+      this.netVelocity.x +=this.planet.netVelocity.x;
+      this.netVelocity.y +=this.planet.netVelocity.y;
+      this.pos.x += dt * this.planet.netVelocity.x * Constants.VELOCITY_MULTIPLIER;
+      this.pos.y += dt * this.planet.netVelocity.y * Constants.VELOCITY_MULTIPLIER;
     }
+  }
+    if(this.trapDoor.isClosed){
+      this.collisionZeros[1] = 'a';
+      this.collisionZeros[8] = 'a';
+    }
+    else if(this.trapDoor.opening || this.trapDoor.closing){
+      this.collisionZeros[1] = 'a';
+      this.collisionZeros[8] = this.collisionZero8;
+
+    }
+    else{
+      this.collisionZeros[1] = this.collisionZero1;
+      this.collisionZeros[8] = this.collisionZero8;
+    }
+    
   }
   updateDisplace(){
     this.pos.x += this.displace.x;
@@ -315,7 +340,6 @@ class PirateShip extends Polygon{
     this.tangent = new Vector(-this.turn * (this.planet.pos.y - this.pos.y), this.turn * (this.planet.pos.x - this.pos.x)).unit();
     var now = new Vector(this.turn * (this.points[1].x - this.points[0].x), this.turn * (this.points[1].y - this.points[0].y)).unit();
     var rot = Math.acos(this.tangent.dot(now));
-        
         if(this.continueGrapple && this.direction < -this.turn * Constants.PI + .1 && this.direction > -this.turn * Constants.PI - .1){
           this.continued = true;        
         }
@@ -325,25 +349,24 @@ class PirateShip extends Polygon{
         }
         else if(this.continued && this.direction <  .1 && this.direction >  -.1){
           this.grapple.detach();
+          this.continued = false;
           this.cannon1.rotateBarellTo(0);
           this.cannonLower1.rotateBarellTo(2);
           this.cannonLower2.rotateBarellTo(Constants.PI - 2);
-          this.continued = false;
         }
         else{
           this.rotate(-this.turn * rot,true);
-          this.forwardMove.x = this.tangent.x * 15;
-          this.forwardMove.y = this.tangent.y * 15;
+          this.forwardMove.x = this.tangent.x * 45;
+          this.forwardMove.y = this.tangent.y * 45;
         }
   }
-
   getIntoOrbit(rot){
     this.tangent = new Vector(-this.turn * (this.planet.pos.y - this.pos.y), this.turn * (this.planet.pos.x - this.pos.x)).unit();
-    this.rotate(-this.turn * rot/30,true);
-    this.forwardMove.x =  0;
-    this.forwardMove.y =  0;
+    this.rotate(-this.turn * rot/60,true);
+    this.forwardMove.x = this.tangent.x * 0;
+    this.forwardMove.y = this.tangent.y * 0;
     this.rotOGCounter +=1;
-    if(this.rotOGCounter == 30){
+    if(this.rotOGCounter == 60){
       this.justGrappled = false;
     }
   }
@@ -417,6 +440,16 @@ class PirateShip extends Polygon{
           this.collisionZeros[i].y = y * cos + x * sin;
         }
       }
+
+      var x = this.collisionZero1.x;
+      var y = this.collisionZero1.y;
+      this.collisionZero1.x = x * cos - y * sin;
+      this.collisionZero1.y = y * cos + x * sin;
+      
+      var x = this.collisionZero8.x;
+      var y = this.collisionZero8.y;
+      this.collisionZero8.x = x * cos - y * sin;
+      this.collisionZero8.y = y * cos + x * sin;
 
       for(var i = 0; i<this.damages.length;i++){
         var x = this.damages[i].point.x;

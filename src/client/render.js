@@ -1,12 +1,10 @@
 import { debounce } from 'throttle-debounce';
-import constants, { PLAYER_SIZE } from '../shared/constants';
 import { getAsset } from './assets';
 import { getCurrentState } from './state';
 import Vector from './vector';
 
 const Constants = require('../shared/constants');
 
-const { PLAYER_RADIUS, MAP_SIZE,BLOCK_SIZE } = Constants;
 var lastUpdateTime  = 0;
 // Get the canvas graphics context
 const canvas = document.getElementById('game-canvas');
@@ -24,7 +22,7 @@ function setCanvasDimensions() {
 
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
 function render() {
-  const { me, others, blocks, ships,cannonBalls,grapples,planets} = getCurrentState();
+  const { me, others, blocks, ships,cannonBalls,grapples,planets,asteroids} = getCurrentState();
   if (!me) {
     return;
   }
@@ -35,8 +33,24 @@ function render() {
 
 
   //draw planets
-  planets.forEach(planet => drawPoly(planet,me));
+  planets.forEach(planet =>{
+    drawPoly(planet,me);
+    context.fillStyle = '#278c0b';
+    context.fill();
+  });
 
+  //draw asteroids
+  asteroids.forEach(a =>{
+    var canvasX = canvas.width / 2 + a.x - me.eyesX;
+    var canvasY = canvas.height / 2 + a.y - me.eyesY;
+    context.beginPath();
+    context.arc(canvasX,canvasY,a.radius,0,2 * Constants.PI);
+    context.stroke();
+    context.fillStyle = '#a3a19d';
+    context.fill();
+    context.fillStyle = 'black';
+
+  });
   //draw ship hulls
   ships.forEach(ship =>{
     drawShip(ship,me);
@@ -101,13 +115,14 @@ function render() {
   //draw Explosions
   ships.forEach(ship =>{
       ship.explosions.filter(e => e,).forEach(explosion =>{
-        console.log(ship.explosions);
         var canvasX = canvas.width / 2 +  explosion.x - me.eyesX;
         var canvasY = canvas.height / 2 + explosion.y - me.eyesY;
         context.beginPath();
         context.arc(canvasX, canvasY, explosion.radius, 0, 2*Constants.PI);
-        context.fillStyle = 'red';
+        context.fillStyle = 'rgb(255,'+explosion.timer * 255/5+','+explosion.timer*255/5+')';
+        context.globalAlpha = 1- explosion.timer * 1/5;
         context.fill();
+        context.globalAlpha = 1;
       });
     });
     context.fillStyle = 'black';
@@ -123,13 +138,46 @@ function render() {
 }
 
 function renderBackground(playerX, playerY){
-  context.fillStyle = '#34cceb';
+  var canvasX = canvas.width / 2  - playerX;
+  var canvasY = canvas.height / 2  - playerY;
+  var grd = context.createLinearGradient(
+    canvasX,
+    canvasY,
+    canvasX,
+    Constants.MAP_HEIGHT + canvasY + 1000
+  );
+  grd.addColorStop(.8, "#34cceb");
+  grd.addColorStop(.25, "#0440cc");  
+  grd.addColorStop(0, "black");  
+  context.fillStyle = grd;
   context.fillRect(0,0,canvas.width,canvas.height);
   for(var x = playerX - canvas.width/2 - 400; x < canvas.width/2 + playerX + 400; x +=20){
     for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=20){
       x = Math.ceil(x / 20) * 20;
       y = Math.ceil(y/20) * 20;
       if((x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && (x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 860 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0))){
+        context.save();
+        if(y < Constants.MAP_HEIGHT * .35){
+        context.fillStyle = "#FFDB51";
+        context.translate(canvas.width / 2 - playerX + x, canvas.height / 2 - playerY + y);
+        context.beginPath();
+        const a = 5;
+        context.moveTo(108/a, 0.0);
+        context.lineTo(141/a, 70/a);
+        context.lineTo(218/a, 78.3/a);
+        context.lineTo(162/a, 131/a);
+        context.lineTo(175/a, 205/a);
+        context.lineTo(108/a, 170/a);
+        context.lineTo(41.2/a, 205/a);
+        context.lineTo(55/a, 131/a);
+        context.lineTo(1/a, 78/a);
+        context.lineTo(75/a, 68/a);
+        context.lineTo(108/a, 0);
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+      else{
         context.save();
         context.translate(canvas.width / 2 - playerX + x, canvas.height / 2 - playerY + y);
         context.beginPath();
@@ -145,13 +193,18 @@ function renderBackground(playerX, playerY){
         context.fill();
         context.restore();
       }
+      }
     }
+    context.fillStyle = 'black';
   }
   context.lineWidth = 3;
+  context.strokeStyle = 'red';
   context.strokeRect(canvas.width / 2 - playerX, canvas.height / 2 - playerY, Constants.MAP_WIDTH, Constants.MAP_HEIGHT);
   context.lineWidth = .5;
   context.restore();
   context.fillStyle = 'black';
+  context.strokeStyle = 'black';
+
 }
 
 
@@ -464,8 +517,8 @@ function drawCannonBall(cannonBall,player){
 
 function renderMainMenu() {
   const t = Date.now() / 7500;
-  const x = MAP_SIZE / 2 + 800 * Math.cos(t);
-  const y = MAP_SIZE / 2 + 800 * Math.sin(t);
+  const x = Constants.MAP_SIZE / 2 + 800 * Math.cos(t);
+  const y = Constants.MAP_SIZE / 2 + 800 * Math.sin(t);
   renderBackground(x, y);
 }
 

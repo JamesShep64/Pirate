@@ -75,6 +75,7 @@ export function getCurrentState() {
       cannonBalls : interpolateObjectArray(baseUpdate.cannonBalls,next.cannonBalls,ratio),
       grapples : interpolateObjectArray(baseUpdate.grapples,next.grapples,ratio),
       planets : baseUpdate.planets,
+      asteroids : interpolateObjectArray(baseUpdate.asteroids,next.asteroids,ratio),
     };
   }
 }
@@ -86,7 +87,7 @@ function interpolateObject(object1, object2, ratio) {
 
   const interpolated = {};
   Object.keys(object1).forEach(key => {
-    if (key === 'x' || key === 'y' || key == 'eyesX' || key == 'eyesY' || key =='xEnd' || key == 'yEnd'){
+    if (key === 'x' || key === 'y' || key == 'eyesX' || key == 'eyesY' || key =='xEnd' || key == 'yEnd' || key =='timer'){
       interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;
     }
     else if(key == 'points'){

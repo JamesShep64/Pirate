@@ -11,6 +11,7 @@ const blockShipCollision = require('./blockShipCollision');
 const Planet = require('./planet');
 const Cannon = require('./cannon');
 const CannonBall = require('./cannonBall');
+const Asteroid = require('./asteroid');
 const trapDoorCollision = require('./trapDoorCollision');
 const { BLOCK_SIZE, PLAYER_SIZE, MAP_HEIGHT } = require('../shared/constants');
 const playerLadderCollision = require('./playerLadderCollision');
@@ -28,8 +29,10 @@ class Game {
     this.ships = [];
     this.planets = [];
     this.blocks = {};
+    this.asteroids = {};
     this.blockID = 1;
     this.teamID = 1;
+    this.asteroidID = 1;
     this.seenCannonBalls = [];
     this.seenGrapples = [];
     this.lastUpdateTime = Date.now();
@@ -42,21 +45,26 @@ class Game {
 
   addCrew(lobby){
      const generatePosition = () => {
-      const x = Constants.MAP_WIDTH * (Math.random());
-      const y = Constants.MAP_HEIGHT * (Math.random());
+      const x = Constants.MAP_WIDTH * (.2 + .6*Math.random());
+      const y = Constants.MAP_HEIGHT * (.2 + .6*Math.random());
       this.planets.forEach(planet =>{
-        if(withinRect(x,y,planet,280,280)){
+        if(withinRect(x,y,planet,500,280)){
           generatePosition();
         }
       });
-      this.ships.forEach(planet =>{
-        if(withinRect(x,y,planet,440,440)){
+      this.ships.forEach(ship =>{
+        if(withinRect(x,y,ship,500,440)){
           generatePosition();
         }
       });
       return {x,y};
     }
     const {x,y} = generatePosition();
+    var start = new Vector(x + 100,y - 200);
+    var end = new Vector(x - 3000,y - 200);
+    this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,start,new Vector(end.x-start.x,end.y - start.y));
+    this.asteroidID++;
+
     this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+((Math.random() * 255) - 50).toString()+","+((Math.random() * 255) - 50).toString()+','+((Math.random() * 255) - 50).toString()+')',lobby.creator,this));
     lobby.ship = this.ships[this.ships.length-1];
     if(x > Constants.MAP_WIDTH/2){
@@ -116,12 +124,30 @@ class Game {
 
 
   createMap(){
-    for(var x =-400; x < Constants.MAP_WIDTH + 900; x+=900){
+    for(var x =-400; x < Constants.MAP_WIDTH * .7; x+=900){
       for(var y = -400; y < Constants.MAP_HEIGHT + 1000; y+=900){
         var xPos = (.5 - Math.random()) * 600 + x;
         var yPos = (.5 - Math.random()) * 600 + y;
         this.planets.push(new Planet(xPos,yPos));
       }
+    }
+    var ts = [];
+    for(var i = 0; i<20;i++){
+      var topPoint = new Vector(.7 * Constants.MAP_WIDTH +  Constants.MAP_WIDTH * .3 * Math.random(),-500);
+      var bottomPoint = new Vector(.7 * Constants.MAP_WIDTH +  Constants.MAP_WIDTH * .3 * Math.random(),Constants.MAP_HEIGHT + 500);
+      this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,topPoint,new Vector(bottomPoint.x-topPoint.x,bottomPoint.y - topPoint.y));
+      this.asteroids[this.asteroidID].generateT(ts);
+      ts.push(this.asteroids[this.asteroidID].t);
+      this.asteroidID++;
+    }
+    var ts = [];
+    for(var i = 0; i<20;i++){
+      var topPoint = new Vector(Constants.MAP_WIDTH * .3 * Math.random(),-500);
+      var bottomPoint = new Vector(Constants.MAP_WIDTH * .3 * Math.random(),Constants.MAP_HEIGHT + 500);
+      this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,topPoint,new Vector(bottomPoint.x-topPoint.x,bottomPoint.y - topPoint.y));
+      this.asteroids[this.asteroidID].generateT(ts);
+      ts.push(this.asteroids[this.asteroidID].t);
+      this.asteroidID++;
     }
   }
 
@@ -130,7 +156,6 @@ class Game {
     const now = Date.now();
     const dt = (now - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = now;
-
 
     // Update each player
     Object.keys(this.players).forEach(playerID => {
@@ -144,6 +169,11 @@ class Game {
       }
      player.update(dt);
     });
+
+    //update asteroids
+    Object.values(this.asteroids).forEach(a =>{
+      a.update(dt);
+    });
     //update Ships
     this.ships.forEach(ship =>{ 
       if(ship.pos.x < 0 || ship.pos.x > Constants.MAP_WIDTH || ship.pos.y < 0 || ship.pos.y > MAP_HEIGHT){
@@ -156,7 +186,7 @@ class Game {
       ship.ships = this.ships;
       ship.update(dt);
     });
-    
+
     // update each block
     Object.keys(this.blocks).forEach(id => {
       if(this.blocks[id].pos.x < 0 || this.blocks[id].pos.x > Constants.MAP_WIDTH || this.blocks[id].pos.y < 0 || this.blocks[id].pos.y > MAP_HEIGHT){
@@ -473,6 +503,18 @@ class Game {
           }
         }
       }
+
+      //graple asteroid collision
+      if(ship.grapple && !ship.grapple.gotHooked){
+        Object.values(this.asteroids).forEach(a =>{
+          if(ship.grapple){
+            if(ship.grapple.distanceTo(a) < a.radius){
+              ship.grapple.hook(a);
+              ship.orbit();
+            }
+          }
+        });
+      }
   
       //grapple ship collision
       if(ship.grapple && !ship.grapple.gotHooked){
@@ -496,11 +538,11 @@ class Game {
       }
     });
     //block block Collision
-  var comboCol = {};
-  Object.keys(this.blocks).forEach(id => {
-    comboCol[id] = [];
-    this.blocks[id].gotPushed = false;
-  });
+    var comboCol = {};
+    Object.keys(this.blocks).forEach(id => {
+      comboCol[id] = [];
+      this.blocks[id].gotPushed = false;
+    });
 
     Object.keys(this.blocks).forEach(id =>{
     Object.keys(this.blocks).forEach(id2 =>{
@@ -624,6 +666,9 @@ class Game {
       if(ship.grapple && player.withinVisionRect(ship,1800,1800))
       nearbyGrapples.push(ship.grapple);
     });
+    const nearbyAsteroids = Object.values(this.asteroids).filter(
+      p =>  player.withinVisionRect(p,1800,1800),
+    );
     return {
       t: Date.now(),
       me: player.serializeForUpdate(),
@@ -633,6 +678,7 @@ class Game {
       planets: nearbyPlanets.map(p => p.serializeForUpdate()),
       cannonBalls : nearbyCannonBalls.map(ball => ball.serializeForUpdate()),
       grapples : nearbyGrapples.map(g => g.serializeForUpdate()),
+      asteroids : nearbyAsteroids.map(a => a.serializeForUpdate()),
       leaderboard,
     };
   }
