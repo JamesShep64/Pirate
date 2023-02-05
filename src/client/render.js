@@ -111,7 +111,6 @@ function render() {
     context.fill();
     context.fillStyle = 'black';
   });
-
   //draw Explosions
   ships.forEach(ship =>{
       ship.explosions.filter(e => e,).forEach(explosion =>{
@@ -127,6 +126,12 @@ function render() {
     });
     context.fillStyle = 'black';
 
+  //draw Sun  
+  renderSun(me.eyesX,me.eyesY);
+  
+  //draw Ocean
+  renderOcean(me.eyesX,me.eyesY);
+
   //draw text
   context.globalAlpha = .6;
   context.font = "400px serif";
@@ -137,6 +142,70 @@ function render() {
 
 }
 
+function renderSun(playerX, playerY){
+  var canvasX = canvas.width / 2  - playerX;
+  var canvasY = canvas.height / 2  - playerY;
+  if(playerY - canvas.height/2 < 1800){
+    context.fillStyle = '#fc3d03';
+    context.fillRect(canvas.width / 2 - playerX -2000, canvas.height / 2 - playerY - 3000, Constants.MAP_WIDTH + 2000, 3000);
+    var grd = context.createLinearGradient(
+      canvasX,
+      canvasY,
+      canvasX,
+      canvasY + 1000
+    );
+    grd.addColorStop(0, "rgba(252,62,3,1)");
+    grd.addColorStop(.5, "rgba(252,62,3,0)");
+    context.fillStyle = grd;
+    context.fillRect(0,0,canvas.width,canvas.height);
+    context.fillStyle = 'black';
+
+  }
+} 
+function renderOcean(playerX,playerY){
+  const canvasX = canvas.width / 2  - playerX;
+  const canvasY = canvas.height / 2  - playerY;
+  const waveSizeX = 100;
+  const waveSizeY = 20;
+    for(var x = -2000; x < Constants.MAP_WIDTH + 2000; x += 200){
+      var startX = canvasX + x - waveSizeX;
+      var startY = canvasY + Constants.MAP_HEIGHT;
+      if(x == -2000){context.moveTo(startX,startY);}else{context.lineTo(startX,startY);}
+      var endX = canvasX + x;
+      var endY = startY - waveSizeY;
+      var cp1X = startX + waveSizeX * .69;
+      var cp1Y = startY - waveSizeY * .19;
+      var cp2X = endX - waveSizeX * .5;
+      var cp2Y = endY + .21 * waveSizeY;
+      context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,endX,endY);
+      startX = endX;
+      startY = endY;
+      var endX = canvasX + x + waveSizeX;
+      var endY = canvasY + Constants.MAP_HEIGHT;
+      var cp1X = startX - waveSizeX * .1;
+      var cp1Y = startY + waveSizeY * .21;
+      var cp2X = endX - waveSizeX * .69;
+      var cp2Y = endY - waveSizeY * .19;
+      context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,endX,endY);
+    }
+    context.lineTo(canvasX + Constants.MAP_WIDTH + 1000,canvasY + Constants.MAP_HEIGHT + 1000);
+    context.lineTo(canvasX - 2000 - waveSizeX,canvasY + Constants.MAP_HEIGHT + 1000);
+    context.lineTo(canvasX - 2000 - waveSizeX,canvasY + Constants.MAP_HEIGHT);    
+    context.stroke();
+    context.closePath();
+    var grd = context.createLinearGradient(
+      canvasX,
+      canvasY + Constants.MAP_HEIGHT - 70,
+      canvasX,
+      canvasY + Constants.MAP_HEIGHT +1000
+    );
+    grd.addColorStop(0,'#03fce8');
+    grd.addColorStop(.1, "blue");
+    grd.addColorStop(.7, "black");
+
+    context.fillStyle = grd;
+    context.fill();
+}
 function renderBackground(playerX, playerY){
   var canvasX = canvas.width / 2  - playerX;
   var canvasY = canvas.height / 2  - playerY;
@@ -147,15 +216,15 @@ function renderBackground(playerX, playerY){
     Constants.MAP_HEIGHT + canvasY + 1000
   );
   grd.addColorStop(.8, "#34cceb");
-  grd.addColorStop(.25, "#0440cc");  
+  grd.addColorStop(.35, "#0440cc");  
   grd.addColorStop(0, "black");  
   context.fillStyle = grd;
   context.fillRect(0,0,canvas.width,canvas.height);
-  for(var x = playerX - canvas.width/2 - 400; x < canvas.width/2 + playerX + 400; x +=20){
-    for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=20){
-      x = Math.ceil(x / 20) * 20;
-      y = Math.ceil(y/20) * 20;
-      if((x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && (x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 860 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0))){
+  for(var x = playerX - canvas.width/2 - 400; x < canvas.width/2 + playerX + 400; x +=40){
+    for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=40){
+      x = Math.ceil(x / 40) * 40;
+      y = Math.ceil(y/40) * 40;
+      if((x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && ((x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 1760 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0)))){
         context.save();
         if(y < Constants.MAP_HEIGHT * .35){
         context.fillStyle = "#FFDB51";
@@ -199,7 +268,7 @@ function renderBackground(playerX, playerY){
   }
   context.lineWidth = 3;
   context.strokeStyle = 'red';
-  context.strokeRect(canvas.width / 2 - playerX, canvas.height / 2 - playerY, Constants.MAP_WIDTH, Constants.MAP_HEIGHT);
+  context.strokeRect(canvas.width / 2 - playerX, canvas.height / 2 - playerY, Constants.MAP_WIDTH, Constants.MAP_HEIGHT + 50);
   context.lineWidth = .5;
   context.restore();
   context.fillStyle = 'black';
@@ -505,7 +574,6 @@ function drawShipParts(ship,player){
       context.fill();
       */
 }
-
 
 function drawCannonBall(cannonBall,player){
     var canvasX = canvas.width / 2 + cannonBall.x - player.eyesX;
