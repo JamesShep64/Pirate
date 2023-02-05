@@ -60,11 +60,12 @@ class Game {
       return {x,y};
     }
     const {x,y} = generatePosition();
+    /*
     var start = new Vector(x + 100,y - 200);
     var end = new Vector(x - 3000,y - 200);
     this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,start,new Vector(end.x-start.x,end.y - start.y));
     this.asteroidID++;
-
+    */
     this.ships.push(new PirateShip(x,y+50,'gallion',this.teamID.toString(),"rgb("+((Math.random() * 255) - 50).toString()+","+((Math.random() * 255) - 50).toString()+','+((Math.random() * 255) - 50).toString()+')',lobby.creator,this));
     lobby.ship = this.ships[this.ships.length-1];
     if(x > Constants.MAP_WIDTH/2){
