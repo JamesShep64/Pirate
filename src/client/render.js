@@ -22,7 +22,7 @@ function setCanvasDimensions() {
 
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
 function render() {
-  const { me, others, blocks, ships,cannonBalls,grapples,planets,asteroids} = getCurrentState();
+  const { me, others, blocks, ships,cannonBalls,grapples,explosions,planets,asteroids} = getCurrentState();
   if (!me) {
     return;
   }
@@ -109,22 +109,19 @@ function render() {
     drawPoly(block,me);
     context.fillStyle = "rgb(210,180,140)";
     context.fill();
-    context.fillStyle = 'black';
   });
   //draw Explosions
-  ships.forEach(ship =>{
-      ship.explosions.filter(e => e,).forEach(explosion =>{
-        var canvasX = canvas.width / 2 +  explosion.x - me.eyesX;
-        var canvasY = canvas.height / 2 + explosion.y - me.eyesY;
-        context.beginPath();
-        context.arc(canvasX, canvasY, explosion.radius, 0, 2*Constants.PI);
-        context.fillStyle = 'rgb(255,'+explosion.timer * 255/5+','+explosion.timer*255/5+')';
-        context.globalAlpha = 1- explosion.timer * 1/5;
-        context.fill();
-        context.globalAlpha = 1;
-      });
-    });
+  explosions.forEach(explosion =>{
+    var canvasX = canvas.width / 2 +  explosion.x - me.eyesX;
+    var canvasY = canvas.height / 2 + explosion.y - me.eyesY;
+    context.beginPath();
+    context.arc(canvasX, canvasY, explosion.radius, 0, 2*Constants.PI);
+    context.fillStyle = 'rgb(255,'+explosion.timer * 255/5+','+explosion.timer*255/5+')';
+    context.globalAlpha = 1- explosion.timer * 1/5;
+    context.fill();
+    context.globalAlpha = 1;
     context.fillStyle = 'black';
+  });
 
   //draw Sun  
   renderSun(me.eyesX,me.eyesY);
@@ -163,10 +160,12 @@ function renderSun(playerX, playerY){
   }
 } 
 function renderOcean(playerX,playerY){
+  context.save();
   const canvasX = canvas.width / 2  - playerX;
   const canvasY = canvas.height / 2  - playerY;
   const waveSizeX = 100;
   const waveSizeY = 20;
+  context.beginPath();
     for(var x = -2000; x < Constants.MAP_WIDTH + 2000; x += 200){
       var startX = canvasX + x - waveSizeX;
       var startY = canvasY + Constants.MAP_HEIGHT;
@@ -205,6 +204,9 @@ function renderOcean(playerX,playerY){
 
     context.fillStyle = grd;
     context.fill();
+    context.arc(canvasX - 1500 - waveSizeX,canvasY + Constants.MAP_HEIGHT + 800,2,0,2 * Constants.PI);
+    context.fill();
+    context.restore();
 }
 function renderBackground(playerX, playerY){
   var canvasX = canvas.width / 2  - playerX;

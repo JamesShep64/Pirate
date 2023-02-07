@@ -356,17 +356,17 @@ class PirateShip extends Polygon{
         }
         else{
           this.rotate(-this.turn * rot,true);
-          this.forwardMove.x = this.tangent.x * 45;
-          this.forwardMove.y = this.tangent.y * 45;
+          this.forwardMove.x = this.tangent.x * 30;
+          this.forwardMove.y = this.tangent.y * 30;
         }
   }
   getIntoOrbit(rot){
     this.tangent = new Vector(-this.turn * (this.planet.pos.y - this.pos.y), this.turn * (this.planet.pos.x - this.pos.x)).unit();
-    this.rotate(-this.turn * rot/60,true);
+    this.rotate(-this.turn * rot/30,true);
     this.forwardMove.x = this.tangent.x * 0;
     this.forwardMove.y = this.tangent.y * 0;
     this.rotOGCounter +=1;
-    if(this.rotOGCounter == 60){
+    if(this.rotOGCounter == 30){
       this.justGrappled = false;
     }
   }
@@ -559,7 +559,6 @@ class PirateShip extends Polygon{
       col : this.isCol,
       points: this.points,
       damages: this.damages,
-      explosions : Object.values(this.explosions).map( e => e.serializeForUpdate()),
       cannon1 : this.cannon1.serializeForUpdate(),
       cannonLower1 : this.cannonLower1.serializeForUpdate(),
       cannonLower2 : this.cannonLower2.serializeForUpdate(),

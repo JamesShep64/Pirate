@@ -23,6 +23,8 @@
     <button id="lobby-button">CREATE LOBBY</button>
   </div>
   <div id="play-menu" class="hidden">
+    <h1 id = 'instructions'>PRESS t TO SEE TUTUORIAL</h1>
+    <p></p>
       <table id="lobby-board">
         <tr><td></td></tr>
         <tr><td></td></tr>
@@ -37,14 +39,24 @@
       <p></p>
       <p></p>
       <p></p>
+      <p></p>
+      <p></p>
       <div id="'buttons">
         <button id="play-button">PLAY</button>
         <button id = "copy-button">GET SHARE LINK</button>
       </div>
       <p id = 'link'></p>
     </div>
-  <button id="play-button">PLAY</button>
-
+  <div class = "container hidden" id = 'tutorial'>
+    <img class = 'control prev' src = '/assets/icon64.png' alt = ''>
+    <div class = 'slider'>
+      <img src = '/assets/page1.png' alt = ''>
+      <img src = '/assets/ex.gif' alt = ''>
+      <img src = '/assets/page1.png' alt = ''>
+      <img src = '/assets/page2.png' alt = ''>
+    </div>
+    <img class = 'control next' src = '/assets/icon64.png' alt = ''>
+  </div>
   <div id="leaderboard" class="hidden">
     <table>
       <tr>

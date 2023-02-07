@@ -20,7 +20,7 @@ class Asteroid{
     generateT(ts){
         this.t = Math.round(Math.random() * 1000)/1000;
         for(var other in ts){
-            if(this.t + .018 > other && this.t - .018 < other){
+            if(this.t + .020 > other && this.t - .020 < other){
                 this.generateT(ts);
             }
         }

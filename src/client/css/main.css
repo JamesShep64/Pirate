@@ -55,35 +55,23 @@ button:focus {
   text-align: center;
 }
 
-#play-menu {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translateY(-50%) translateX(-50%);
-  padding: 20px 30px;
-  width: 275px;
-  height: 200px;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border-radius: 5px;
-  text-align: center;
-}
 
 #link{
   font-size: 10px;
 }
 #lobby-board {
   position: fixed;
+  top : 15%;
   background-color: rgba(255, 255, 255, 0.5);
   padding: 10px;
   border-radius: 5px;
 }
 #buttons{
+  position: fixed;
   display: inline-block;
 }
 #play-button{
+  
   font-size: 12px;
 }
 
@@ -130,6 +118,81 @@ button:focus {
   border-radius: 5px;
 }
 
+#play-menu {
+  min-width: 280px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  padding: 20px 30px;
+  width: 275px;
+  height: 280px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 5px;
+  text-align: center;
+}
+#instructions{
+  font-size: 15px;
+  top:0%;
+  color :rgb(120, 229, 125);
+}
+
+
+
+#tutorial{
+  min-width: 280px;
+  position: fixed;
+  top: 10%;
+  left:15%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 5px;
+  text-align: center;
+}
+
+#tutorial .slider{
+  display : flex;
+  flex-direction: column;
+  background: black;
+  padding: 2px;
+  width: 500px;
+  height: 600px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  vertical-align: middle;
+
+}
+
+#tutorial .slider img{
+  margin: 3px;
+}
+
+#tutorial .control{
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: black;
+  cursor: pointer;
+  object-fit: cover;
+  padding: 10px;
+}
+
+.container .prev{
+  left:0;
+  top:50%;
+  transform: translate(-50%,-50%);
+}
+
+.container .next{
+  left:90%;
+  top:50%;
+  transform: translate(50%,-50%);
+}
 #leaderboard th {
   text-align: center;
   padding: 2px 5px;
@@ -169,10 +232,6 @@ button:focus {
     font-size: 1.75rem;
   }
 
-  #play-menu {
-    padding: 10px 15px;
-    min-width: 280px;
-  }
 
   #username-menu {
     padding: 10px 15px;

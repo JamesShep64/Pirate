@@ -74,6 +74,7 @@ export function getCurrentState() {
       ships: interpolateShips(baseUpdate.ships,next.ships,ratio),
       cannonBalls : interpolateObjectArray(baseUpdate.cannonBalls,next.cannonBalls,ratio),
       grapples : interpolateObjectArray(baseUpdate.grapples,next.grapples,ratio),
+      explosions : interpolateObjectArray(baseUpdate.explosions,next.explosions,ratio),
       planets : baseUpdate.planets,
       asteroids : interpolateObjectArray(baseUpdate.asteroids,next.asteroids,ratio),
     };

@@ -21,20 +21,46 @@ const playButton = document.getElementById('play-button')
 const copyButton = document.getElementById('copy-button');
 const usernameInput = document.getElementById('username-input');
 const lobbyCreator = document.getElementById('lobby-creator');
+const tutorial = document.getElementById('tutorial');
 const link = document.getElementById('link');
-
+const prev = document.querySelector('.prev');
+const next = document.querySelector('.next');
+const slider = document.querySelector('.slider');
+var showingTutorial = false;
 var joinedLobby = false;
 Promise.all([
   connect(onGameOver),
   downloadAssets(),
 ]).then(() => {
+  //tutorial.classList.remove('hidden');
+  
+  prev.addEventListener('click',()=>{
+    slider.scrollTop-=300;
+  });
+  next.addEventListener('click',()=>{
+    slider.scrollTop+=300;
+  });
   usernameMenu.classList.remove('hidden');
   usernameInput.focus();
   lobbyButton.onclick = () => {
     window.addEventListener('beforeunload',() =>{
       console.log('reload');
       disconnect();
-    });
+    });/*
+    window.addEventListener('keypress',e=>{
+      if(e.key == 't'){
+        if(!showingTutorial){
+          tutorial.classList.remove('hidden');
+          showingTutorial = true;
+        }
+        else{        
+          tutorial.classList.add('hidden');
+          showingTutorial = false;
+        }
+
+      }
+      
+    });*/
     if(!joinedLobby){
       createLobby(usernameInput.value);
     }
@@ -48,8 +74,9 @@ Promise.all([
 
   copyButton.onclick = () =>{
     copyButton.innerHTML = 'Link Bellow!';
-    link.innerHTML = window.location.href.toString()+getID();
-    console.log(window.location.href.toString()+getID());
+    link.innerHTML = window.location.href.toString()+getID();  
+    link.select();
+    link.focus();
   };
 
   playButton.onclick = () => {

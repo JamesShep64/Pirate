@@ -405,8 +405,8 @@ class PlayerObject extends Polygon{
   doJump(){
     if(this.isCol || this.onTop || this.movedOnLadder){
       if(this.movedOnLadder){
-        this.jumpVel.x = this.jump.x * 65;
-        this.jumpVel.y = this.jump.y * 65;
+        this.jumpVel.x = this.jump.x * 75;
+        this.jumpVel.y = this.jump.y * 75;
       }
       else{
         this.jumpVel.x = this.jump.x * 45;

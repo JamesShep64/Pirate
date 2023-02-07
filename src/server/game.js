@@ -46,8 +46,8 @@ class Game {
   addCrew(lobby){
      const generatePosition = () => {
       const x = Constants.MAP_WIDTH * (.2 + .6*Math.random());
-      //const y = Constants.MAP_HEIGHT * (.2 + .6*Math.random());
-      const y = Constants.MAP_HEIGHT - 400;
+      const y = Constants.MAP_HEIGHT * (.2 + .6*Math.random());
+      //const y = Constants.MAP_HEIGHT - 400;
       this.planets.forEach(planet =>{
         if(withinRect(x,y,planet,500,280)){
           generatePosition();
@@ -126,8 +126,8 @@ class Game {
 
 
   createMap(){
-    for(var x =-400; x < Constants.MAP_WIDTH * .7; x+=900){
-      for(var y = -400; y < Constants.MAP_HEIGHT + 1000; y+=900){
+    for(var x =Constants.MAP_WIDTH * .2; x < Constants.MAP_WIDTH * .8; x+=2000){
+      for(var y = 1000; y < Constants.MAP_HEIGHT; y+=1100){
         var xPos = (.5 - Math.random()) * 600 + x;
         var yPos = (.5 - Math.random()) * 600 + y;
         this.planets.push(new Planet(xPos,yPos));
@@ -162,8 +162,11 @@ class Game {
     // Update each player
     Object.keys(this.players).forEach(playerID => {
       const player = this.players[playerID];
-      if(player.pos.x < 0 || player.pos.x > Constants.MAP_WIDTH || player.pos.y < 0 || player.pos.y > MAP_HEIGHT){
+      if(player.pos.x < 0 || player.pos.x > Constants.MAP_WIDTH){
         player.outOfBounds = true;
+      }
+      else if(player.pos.y < 0 || player.pos.y > MAP_HEIGHT){
+        player.dead = true;
       }
       else{
         player.outOfBounds = false;
@@ -178,8 +181,11 @@ class Game {
     });
     //update Ships
     this.ships.forEach(ship =>{ 
-      if(ship.pos.x < 0 || ship.pos.x > Constants.MAP_WIDTH || ship.pos.y < 0 || ship.pos.y > MAP_HEIGHT){
+      if(ship.pos.x < 0 || ship.pos.x > Constants.MAP_WIDTH){
         ship.outOfBounds = true;
+      }
+      else if(ship.pos.y < 0 || ship.pos.y > MAP_HEIGHT){
+        ship.dead = true;
       }
       else{
         ship.outOfBounds = false;
@@ -191,8 +197,11 @@ class Game {
 
     // update each block
     Object.keys(this.blocks).forEach(id => {
-      if(this.blocks[id].pos.x < 0 || this.blocks[id].pos.x > Constants.MAP_WIDTH || this.blocks[id].pos.y < 0 || this.blocks[id].pos.y > MAP_HEIGHT){
+      if(this.blocks[id].pos.x < 0 || this.blocks[id].pos.x > Constants.MAP_WIDTH){
         this.blocks[id].outOfBounds = true;
+      }
+      else if( this.blocks[id].pos.y < 0 || this.blocks[id].pos.y > MAP_HEIGHT){
+        this.blocks[id].dead = true;
       }
       else{
         this.blocks[id].outOfBounds = false;
@@ -663,6 +672,16 @@ class Game {
         }
       });
     });
+
+    var nearbyExplosions = [];
+    this.ships.forEach(ship =>{
+      Object.values(ship.explosions).forEach(e=>{ 
+        if(player.withinVisionRect(e,1800,1800)){
+          nearbyExplosions.push(e);
+        }
+      });
+    });
+
     var nearbyGrapples = [];
     this.ships.forEach(ship=>{
       if(ship.grapple && player.withinVisionRect(ship,1800,1800))
@@ -679,6 +698,7 @@ class Game {
       ships: nearbyShips.map(ship =>ship.serializeForUpdate()),
       planets: nearbyPlanets.map(p => p.serializeForUpdate()),
       cannonBalls : nearbyCannonBalls.map(ball => ball.serializeForUpdate()),
+      explosions : nearbyExplosions.map(e => e.serializeForUpdate()),
       grapples : nearbyGrapples.map(g => g.serializeForUpdate()),
       asteroids : nearbyAsteroids.map(a => a.serializeForUpdate()),
       leaderboard,

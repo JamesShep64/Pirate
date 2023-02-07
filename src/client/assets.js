@@ -1,5 +1,10 @@
 const ASSET_NAMES = [
   'player.svg',
+  'icon64.png',
+  'icon1200.png',
+  'page1.png',
+  'page2.png',
+  'ex.gif'
 ];
 
 const assets = {};
