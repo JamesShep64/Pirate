@@ -433,7 +433,7 @@ class PirateShip extends Polygon{
       this.platform.rotate(angle,cos,sin);
       this.flag.rotate(angle,cos,sin);
       for(var i = 0; i<this.collisionZeros.length;i++){
-        if(this.collisionZeros[i] != 'a'){
+        if(this.collisionZeros[i] != 'a' && i != 1 && i != 8){
           var x = this.collisionZeros[i].x;
           var y = this.collisionZeros[i].y;
           this.collisionZeros[i].x = x * cos - y * sin;
