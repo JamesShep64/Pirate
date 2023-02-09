@@ -26,19 +26,18 @@ const link = document.getElementById('link');
 const prev = document.querySelector('.prev');
 const next = document.querySelector('.next');
 const slider = document.querySelector('.slider');
-var showingTutorial = false;
 var joinedLobby = false;
 Promise.all([
   connect(onGameOver),
   downloadAssets(),
 ]).then(() => {
-  //tutorial.classList.remove('hidden');
+  tutorial.classList.remove('hidden');
   
   prev.addEventListener('click',()=>{
-    slider.scrollTop-=300;
+    slider.scrollTop-=290;
   });
   next.addEventListener('click',()=>{
-    slider.scrollTop+=300;
+    slider.scrollTop+=290;
   });
   usernameMenu.classList.remove('hidden');
   usernameInput.focus();
@@ -46,22 +45,8 @@ Promise.all([
     window.addEventListener('beforeunload',() =>{
       console.log('reload');
       disconnect();
-    });/*
-    window.addEventListener('keypress',e=>{
-      if(e.key == 't'){
-        if(!showingTutorial){
-          tutorial.classList.remove('hidden');
-          showingTutorial = true;
-        }
-        else{        
-          tutorial.classList.add('hidden');
-          showingTutorial = false;
-        }
-
-      }
-      
-    });*/
-    if(!joinedLobby){
+    });
+          if(!joinedLobby){
       createLobby(usernameInput.value);
     }
     else{
@@ -81,6 +66,7 @@ Promise.all([
 
   playButton.onclick = () => {
     // Play!
+    tutorial.classList.add('hidden');
     play();
   };
 
@@ -101,6 +87,7 @@ export function joinLobby(update){
 }
 
 export function creatorJoined(){
+  tutorial.classList.add('hidden');
   playMenu.classList.add('hidden');
   initState();
   startCapturingInput();

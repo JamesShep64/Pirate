@@ -5,7 +5,7 @@ import { throttle } from 'throttle-debounce';
 import { processGameUpdate,processLobbyUpdate } from './state';
 import { joinLobby,creatorJoined,becomeLeader } from '.';
 
-const canvas = document.getElementById('game-canvas');
+
 const Constants = require('../shared/constants');
 
 const socketProtocol = (window.location.protocol.includes('https')) ? 'wss' : 'ws';

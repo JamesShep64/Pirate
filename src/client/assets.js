@@ -7,6 +7,9 @@ const ASSET_NAMES = [
   'ex.gif',
   'page2.gif',
   'page3.gif',
+  'page4.gif',
+  'page5.gif',
+  'page6.gif',
 ];
 
 const assets = {};
