@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <g transform="matrix(1, 0, 0, 1, -106.962, -151.580004)">
+    <g>
+      <rect x="106.962" y="151.58" width="276.834" height="274.411" style="stroke: rgb(0, 0, 0); fill: rgb(240, 240, 234);"/>
+    </g>
+  </g>
+  <polygon style="stroke: rgb(0, 0, 0);" points="178.124 57.977 40.082 196.019 42.958 199.254 184.065 60.663"/>
+  <polyline style="stroke: rgb(0, 0, 0);" points="175.247 54.383 110.492 91.769 115.166 99.865 181.023 61.842"/>
+  <path style="stroke: rgb(0, 0, 0);" d="M 175.967 63.01 L 174.17 125.201 L 181.369 125.201 C 183.513 124.343 184.007 57.997 181.369 59.052 L 175.967 63.01 Z"/>
+</svg>

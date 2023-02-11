@@ -36,6 +36,8 @@ class Cannon{
         this.holder;
         this.beingUsed = false;
         this.user;
+        this.selected = 0;
+        this.chosen = 'cannonBall';
         //set side for stationary cannons
         this.side = side;
         //rotate barrel to starting position
@@ -170,6 +172,61 @@ class Cannon{
         ((point.x * line.x + point.y * line.y) / (line.x * line.x + line.y * line.y)) * line.y + zero.y);
         return proj;
     }
+    moveSelected(){
+        this.isLoading = false;
+        this.loadTimer = 0;        
+        var numOfShots = 0;
+        Object.values(this.ship.munitions).forEach(n=>{
+            if(n == 'a' || n > 0){
+                numOfShots++;
+            }
+        });
+        
+        if(this.selected < numOfShots - 1){
+            this.selected++;
+        }
+        else{
+            this.selected = 0;
+        }
+        if(this.selected == 0){this.chosen = 'cannonBall';}
+        else if(this.selected == 1){this.chosen = 'grapple'}
+        if(numOfShots == 3 && this.selected == 2){
+            if(this.ship.munitions.speedBoost > 0){this.chosen = 'speedBoost';}
+            else if(this.ship.munitions.killShot > 0){this.chosen = 'killShot';}
+        }
+    }
+
+    fireShot(){
+        if(this.chosen == 'cannonBall'){
+            if(!(this.ship.grapple && this.line)){
+                this.fireCannonBall('cannonBall');
+            }
+        }
+        else if(this.chosen == 'grapple'){
+
+            this.shootGrapple();
+        }
+        else if(this.chosen == 'speedBoost'){
+            if(!(this.ship.grapple && this.line)){
+                this.fireCannonBall('speedBoost');
+                this.ship.munitions.speedBoost--;
+                if(this.ship.munitions.speedBoost == 0){
+                    this.selected = 0;
+                    this.chosen = 'cannonBall';
+                }
+            }
+        }
+        if(this.chosen == 'killShot'){
+            if(!(this.ship.grapple && this.line)){
+                this.fireCannonBall('killShot');
+                this.ship.munitions.killShot--;
+                if(this.ship.munitions.killShot == 0){
+                    this.selected = 0;
+                    this.chosen = 'cannonBall';
+                }
+            }
+        }
+    }
 
     loadCannonBall(dt){
         if(this.ammo > 0){
@@ -178,21 +235,23 @@ class Cannon{
             }
         }
     }
-    fireCannonBall(){
+    fireCannonBall(type){
         if(this.ammo > 0){
-            this.shootCannonBall(this.loadTimer * 18);
+            this.shootCannonBall(this.loadTimer * 18,type);
             this.ammo--;
         }
         this.isLoading = false;
         this.loadTimer = 0;
     }
 
-    shootCannonBall(power){
-            this.ship.cannonBalls[this.id + this.cannonBallID.toString()] = new CannonBall(this.pos.x + this.shootVec.points[0].x * 60, this.pos.y + this.shootVec.points[0].y * 60, this.shootVec.points[0],power,this.ship,this.id + this.cannonBallID.toString());
+    shootCannonBall(power,type){
+            this.ship.cannonBalls[this.id + this.cannonBallID.toString()] = new CannonBall(this.id + this.cannonBallID.toString(),this.pos.x + this.shootVec.points[0].x * 60, this.pos.y + this.shootVec.points[0].y * 60, this.shootVec.points[0],power,this.ship,type);
             this.cannonBallID++;
     }
 
     shootGrapple(){
+        this.isLoading = false;
+        this.loadTimer = 0;
         if(!this.ship.grapple && this.line){
             this.ship.grapple = new Grapple(this.id + this.cannonBallID.toString(),this.pos.x + this.shootVec.points[0].x * 50, this.pos.y + this.shootVec.points[0].y * 50, this.shootVec.points[0], this.ship, this);
             this.cannonBallID++;
@@ -209,7 +268,10 @@ class Cannon{
             y : this.pos.y,
             points : this.points,
             ammo : this.ammo,
-            loadTimer : this.loadTimer
+            loadTimer : this.loadTimer,
+            selected: this.selected,
+            beingUsed : this.beingUsed,
+
         }
     }
 

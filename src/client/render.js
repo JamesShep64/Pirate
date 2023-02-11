@@ -37,6 +37,13 @@ function render() {
     drawPoly(planet,me);
     context.fillStyle = '#278c0b';
     context.fill();
+    if(planet.power){
+      var canvasX = canvas.width / 2 + planet.x - me.eyesX;
+      var canvasY = canvas.height / 2 + planet.y - me.eyesY;
+      var boost = new Image();
+      boost.src = '/assets/'+planet.power+'.svg';
+      context.drawImage(boost, canvasX-27, canvasY-27,100,100);
+    }
   });
 
   //draw asteroids
@@ -89,6 +96,15 @@ function render() {
     drawPoly(me,me);
     context.fillStyle = me.color;
     context.fill();
+    if(me.holdingPower){
+      var boost = new Image();
+      context.save();
+      context.translate(canvas.width/2 - me.eyesX + me.x + me.points[0].x ,canvas.height/2 - me.eyesY + me.y + me.points[0].y);
+      context.rotate(me.direction);
+      boost.src = '/assets/'+me.holdingPower+'.svg';
+      context.drawImage(boost, 10,0,50,50);
+      context.restore();
+    }
   }
   else{
     context.globalAlpha = .6;
@@ -101,6 +117,15 @@ function render() {
   others.filter(player => !player.dead,).forEach(player => {drawPoly(player,me)
     context.fillStyle = player.color;
     context.fill();
+    if(player.holdingPower){
+      var boost = new Image();
+      context.save();
+      context.translate(canvas.width/2 - me.eyesX + player.x + player.points[0].x ,canvas.height/2 - me.eyesY + player.y + player.points[0].y);
+      context.rotate(player.direction);
+      boost.src = '/assets/'+player.holdingPower+'.svg';
+      context.drawImage(boost, 10,0,50,50);
+      context.restore();
+    }
   });
   context.fillStyle = 'black';
 
@@ -168,7 +193,7 @@ function renderOcean(playerX,playerY){
   context.beginPath();
     for(var x = -2000; x < Constants.MAP_WIDTH + 2000; x += 200){
       var startX = canvasX + x - waveSizeX;
-      var startY = canvasY + Constants.MAP_HEIGHT;
+      var startY = canvasY + Constants.MAP_HEIGHT - 100;
       if(x == -2000){context.moveTo(startX,startY);}else{context.lineTo(startX,startY);}
       var endX = canvasX + x;
       var endY = startY - waveSizeY;
@@ -180,7 +205,7 @@ function renderOcean(playerX,playerY){
       startX = endX;
       startY = endY;
       var endX = canvasX + x + waveSizeX;
-      var endY = canvasY + Constants.MAP_HEIGHT;
+      var endY = canvasY + Constants.MAP_HEIGHT - 100;
       var cp1X = startX - waveSizeX * .1;
       var cp1Y = startY + waveSizeY * .21;
       var cp2X = endX - waveSizeX * .69;
@@ -189,12 +214,12 @@ function renderOcean(playerX,playerY){
     }
     context.lineTo(canvasX + Constants.MAP_WIDTH + 1000,canvasY + Constants.MAP_HEIGHT + 1000);
     context.lineTo(canvasX - 2000 - waveSizeX,canvasY + Constants.MAP_HEIGHT + 1000);
-    context.lineTo(canvasX - 2000 - waveSizeX,canvasY + Constants.MAP_HEIGHT);    
+    context.lineTo(canvasX - 2000 - waveSizeX,canvasY + Constants.MAP_HEIGHT - 400);    
     context.stroke();
     context.closePath();
     var grd = context.createLinearGradient(
       canvasX,
-      canvasY + Constants.MAP_HEIGHT - 70,
+      canvasY + Constants.MAP_HEIGHT - 140,
       canvasX,
       canvasY + Constants.MAP_HEIGHT +1000
     );
@@ -441,7 +466,10 @@ function drawShip(ship,me){
     context.bezierCurveTo(curve.curve2[0],curve.curve2[1],curve.curve2[2],curve.curve2[3],curve.curve2[4],curve.curve2[5]);
     context.lineTo(curve.start.x,curve.start.y);
     context.closePath();
-    context.globalAlpha = 1 - (curve.health/300);
+    context.globalAlpha = 1 - (curve.health/190);
+    if(context.globalAlpha > 1){
+      context.globalAlpha = 1;
+    }
     context.fillStyle = 'red';
     context.fill();
   });
@@ -512,7 +540,82 @@ function drawShipParts(ship,player){
       context.fillStyle = "rgb("+(ship.cannon1.loadTimer*18).toString()+", 10, 10)";
       context.fill();
       context.fillStyle = 'black';
-      
+    //draw munitions
+    var numOfShots = 2;
+    if(ship.cannon1.beingUsed){
+      Object.values(ship.munitions).forEach(n=>{
+        if(n != 'a' || n > 0){
+          numOfShots++;
+        }
+      });
+      context.save();
+      var column = 0;
+      context.translate(canvas.width/2 - player.eyesX + ship.cannon1.x,canvas.height/2 - player.eyesY + ship.cannon1.y);
+      context.rotate(ship.direction);
+      context.globalAlpha = .8;
+      var cannonBall = new Image();
+      cannonBall.src = '/assets/'+'cannonBall'+'.svg';
+      context.drawImage(cannonBall,-10*numOfShots + 25*column,-40,40,40);
+      if(column == ship.cannon1.selected){
+        context.lineWidth = 5;
+        context.strokeStyle = 'blue';
+      }
+      context.strokeRect(-10*numOfShots + 25*column,-40,22,22);
+      context.lineWidth = 1;
+      context.strokeStyle = 'black';
+
+
+      column++;
+      var grapple = new Image();
+      grapple.src = '/assets/'+'grapple'+'.svg';
+      context.drawImage(grapple,-10*numOfShots + 25*column,-40,40,40);
+      if(column == ship.cannon1.selected){
+        context.strokeStyle = 'blue';
+        context.lineWidth = 5;
+      }
+      context.strokeRect(-10*numOfShots + 25*column,-40,22,22);
+      context.strokeStyle = 'black';
+      context.lineWidth = 1;
+
+
+      if(ship.munitions['speedBoost'] > 0){
+      column++;
+      var speedBoost = new Image();
+      speedBoost.src = '/assets/'+'speedBoost'+'.svg';
+      context.drawImage(speedBoost,-10*numOfShots + 25 * column,-40,40,40);
+      if(column == ship.cannon1.selected){
+        context.strokeStyle = 'blue';
+        context.lineWidth = 5;
+      }
+      context.strokeRect(-10*numOfShots+25*column,-40,22,22);
+      context.lineWidth = 1;
+      context.strokeStyle = 'black';
+      context.font = "25px serif";
+      context.fillStyle = 'black';
+      context.fillText(ship.munitions.speedBoost+'',-10*numOfShots + 25 * column+ 5,-20,40);
+      }
+
+      if(ship.munitions['killShot'] > 0){
+        column++;
+        var speedBoost = new Image();
+        speedBoost.src = '/assets/'+'killShot'+'.svg';
+        context.drawImage(speedBoost,-10*numOfShots + 25 * column,-40,40,40);
+        if(column == ship.cannon1.selected){
+          context.strokeStyle = 'blue';
+          context.lineWidth = 5;
+        }
+        context.strokeRect(-10*numOfShots+25*column,-40,22,22);
+        context.lineWidth = 1;
+        context.strokeStyle = 'black';
+        context.font = "25px serif";
+        context.fillStyle = 'black';
+        context.fillText(ship.munitions.killShot+'',-10*numOfShots + 25 * column+ 5,-20,40);
+        }
+
+      context.restore();
+      context.globalAlpha = 1;
+
+    }
       //drawLowerCannon1
       var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyesY;
@@ -580,6 +683,9 @@ function drawShipParts(ship,player){
 function drawCannonBall(cannonBall,player){
     var canvasX = canvas.width / 2 + cannonBall.x - player.eyesX;
     var canvasY = canvas.height / 2 + cannonBall.y - player.eyesY;
+    if(cannonBall.type == 'cannonBall'){context.fillStyle = 'black'}
+    else if(cannonBall.type == 'speedBoost'){context.fillStyle = 'yellow'}
+    else if(cannonBall.type == 'killShot'){context.fillStyle = 'red'}
     context.beginPath();
     context.arc(canvasX, canvasY, 10, 0, 2*Constants.PI);
     context.fill();

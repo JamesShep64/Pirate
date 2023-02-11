@@ -4,7 +4,7 @@ const Polygon = require('./polygon');
 const Constants = require('../shared/constants');
 
 class CannonBall extends Polygon{
-    constructor(x,y,vec, power,ship,id){
+    constructor(id,x,y,vec, power,ship,type){
         super([new Vector(0,-20), new Vector(20,0), new Vector(0,20), new Vector(-20,0)]);
         this.pos = new Vector(x, y);
         this.id = id;
@@ -17,6 +17,8 @@ class CannonBall extends Polygon{
         this.shootVel = new Vector(vec.x * power, vec.y * power);
         this.shipVel = new Vector(ship.netVelocity.x,ship.netVelocity.y);
         this.shootMult = 1;
+        //type
+        this.type = type;
     }
 
     update(dt){        
@@ -60,7 +62,8 @@ class CannonBall extends Polygon{
         return{
             id : this.id,
             x : this.pos.x,
-            y : this.pos.y
+            y : this.pos.y,
+            type: this.type,
         }
     }
 }

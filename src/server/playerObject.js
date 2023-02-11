@@ -64,12 +64,20 @@ class PlayerObject extends Polygon{
     this.onLadder = false;
     this.movedOnLadder = false;
     this.didOnLadder = false;
+
+    //rope
+    this.onRope = false;
+    this.didOnRope = false;
+
     //telescope
     this.eyes = new Vector(x,y);
     this.onTelescope = false;
+    //power ups
+    this.holdingPower;
   }
 
     spawn(){
+      this.holdingPower = null;
       this.dead = false;
       this.deathTimer = 0;
       var r = Math.random();
@@ -85,6 +93,26 @@ class PlayerObject extends Polygon{
       this.outOfBoundsTimer = 0;
     }
     update(dt) {
+      if(this.movingLeft){
+        this.moveLeft();
+      }
+      else if(this.movingRight){
+        this.moveRight();
+      }
+      else{
+        this.horizMove.x = 0;
+        this.horizMove.y = 0;
+      }
+      if(this.movingUp){
+        this.vertMove = this.upMove;
+      }
+      else if(this.movingDown){
+        this.vertMove = this.downMove;
+      }
+      else{
+        this.vertMove.x = 0;
+        this.vertMove.y = 0;
+      }
       if(this.outOfBounds && !this.dead){
         this.outOfBoundsTimer += dt;
         if(this.outOfBoundsTimer > 6){
@@ -330,7 +358,7 @@ class PlayerObject extends Polygon{
 
     if(key == 'l'){
       if(this.isUsing  && !this.onTelescope)
-        this.using.shootGrapple();
+        this.using.moveSelected();
     }
 
     if(key == 'w'){
@@ -372,7 +400,7 @@ class PlayerObject extends Polygon{
     if(key == ' '){
       if(this.isUsing && !this.onTelescope)
       {
-        this.using.fireCannonBall();
+        this.using.fireShot();
       }
     }
   }
@@ -478,6 +506,7 @@ serializeForUpdate() {
     points: this.points,
     dead : this.dead,
     outOfBoundsTimer : this.outOfBoundsTimer,
+    holdingPower : this.holdingPower,
 
   };
 }

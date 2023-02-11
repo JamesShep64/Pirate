@@ -99,6 +99,7 @@ class PirateShip extends Polygon{
     this.rotOGCounter = 0;
     this.turn = 1;
     this.tangent = new Vector(0,0);
+    this.asteroidVelocity = new Vector(0,0);
     this.continued = false;
     this.oneAsteroid = false;
 
@@ -116,6 +117,10 @@ class PirateShip extends Polygon{
     this.deathTimer = 0;
     this.outOfBounds = false;
     this.outOfBoundsTimer = 0;
+    //munitions
+    this.munitions = {cannonBall:'a',grapple:'a',speedBoost:2,killShot:0,};
+    //speed Boost
+    this.speedBoostTimer = 0;
     
   }    
 
@@ -175,6 +180,11 @@ class PirateShip extends Polygon{
       }
     }
 
+    //update ropeBox
+    if(this.grapple?.gotHooked){
+      this.grapple.updateRopeBox();
+    }
+
     //update cannonBalls
     Object.keys(this.cannonBalls).forEach(id =>{
       this.cannonBalls[id].update(dt);
@@ -204,8 +214,14 @@ class PirateShip extends Polygon{
     }
     else{
     //update position
+    if(this.speedBoostTimer > 0){
+      this.netVelocity.x = this.forwardMove.x * 5;
+    this.netVelocity.y = this.forwardMove.y * 5;
+    }
+    else{
     this.netVelocity.x = this.forwardMove.x;
     this.netVelocity.y = this.forwardMove.y;
+    }
     if(!this.stop){
       this.pos.x += dt * this.netVelocity.x * Constants.VELOCITY_MULTIPLIER;
       this.pos.y += dt * this.netVelocity.y * Constants.VELOCITY_MULTIPLIER;
@@ -213,6 +229,13 @@ class PirateShip extends Polygon{
     else{
       this.netVelocity.x = 0;
       this.netVelocity.y = 0;
+    }
+        //speedBoost TImer
+    if(this.speedBoostTimer > 0){
+      this.speedBoostTimer-=dt;
+    }
+    if(this.speedBoostTimer < 0){
+      this.speedBoostTimer = 0;
     }
     //update cannons and telescope
     this.cannon1.update(dt);
@@ -224,7 +247,7 @@ class PirateShip extends Polygon{
     this.torque = 0;
     
     //cannon Turque
-    this.torque += (this.cannon1.pos.x - this.pos.x)/600;
+    this.torque += (this.cannon1.pos.x - this.pos.x)/1200;
 
     //Players Torque
     for(var id in this.hasPlayers){
@@ -248,7 +271,8 @@ class PirateShip extends Polygon{
 
     //damage torque
     for(var i = 0; i < this.damages.length; i++){
-      this.torque -= (this.damages[i].point.x)/1500;
+      if(this.damages[i].health == 0)
+        this.torque -= (this.damages[i].point.x)/1500;
     }
 
     if(!this.inOrbit){
@@ -266,8 +290,14 @@ class PirateShip extends Polygon{
     if(this.onAsteroid){
       this.netVelocity.x +=this.planet.netVelocity.x;
       this.netVelocity.y +=this.planet.netVelocity.y;
+      this.asteroidVelocity.x =this.planet.netVelocity.x;
+      this.asteroidVelocity.y =this.planet.netVelocity.y;      
       this.pos.x += dt * this.planet.netVelocity.x * Constants.VELOCITY_MULTIPLIER;
       this.pos.y += dt * this.planet.netVelocity.y * Constants.VELOCITY_MULTIPLIER;
+    }
+    else{
+      this.asteroidVelocity.x = 0;
+      this.asteroidVelocity.y = 0;
     }
   }
     if(this.trapDoor.isClosed){
@@ -568,7 +598,8 @@ class PirateShip extends Polygon{
       mast : this.mast.serializeForUpdate(),
       platform : this.platform.serializeForUpdate(),
       flag : this.flag.serializeForUpdate(),
-      telescope : this.telescope.serializeForUpdate()
+      telescope : this.telescope.serializeForUpdate(),
+      munitions: this.munitions,
     };
   }
 }

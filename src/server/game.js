@@ -19,6 +19,7 @@ const shipPlanetCollision = require('./shipPlanetCollision');
 const cannonBallShipCollision = require('./cannonBallShipCollision');
 const cannonBallPlanetCollision = require('./cannonBallPlanetCollision');
 const shipShipCollision = require('./shipShipCollision');
+const playerRopeCollision = require('./playerRopeCollision');
 const withinRect = require('./withinRect');
 
 class Game {
@@ -130,7 +131,8 @@ class Game {
       for(var y = 1000; y < Constants.MAP_HEIGHT; y+=1100){
         var xPos = (.5 - Math.random()) * 600 + x;
         var yPos = (.5 - Math.random()) * 600 + y;
-        this.planets.push(new Planet(xPos,yPos));
+        if(Math.random() < .5){var pow = 'speedBoost'}else{var pow = 'killShot';}
+        this.planets.push(new Planet(xPos,yPos,pow));
       }
     }
     var ts = [];
@@ -248,11 +250,39 @@ class Game {
         }
       }
     });
+    //player rope collisions
+    this.ships.filter(player => !player.dead,).forEach(ship =>{
+      if(ship.grapple && ship.grapple.gotHooked){
+        var happened = playerRopeCollision(player,ship.grapple.ropeBox);
+        if(happened){  
+          player.setMove(new Vector(-(ship.grapple.pos.y - ship.grapple.cannon.pos.y), (ship.grapple.pos.x - ship.grapple.cannon.pos.x)).unit());
+          var angularConvert = new Vector((ship.forwardMove.x/ship.distanceTo(ship.planet))*player.distanceTo(ship.planet) + ship.asteroidVelocity.x,
+          (ship.forwardMove.y/ship.distanceTo(ship.planet))*player.distanceTo(ship.planet) + ship.asteroidVelocity.y);
+          player.applyFriction(angularConvert,true);
+          player.rotateTo(0);
+          player.onLadder = true;
+          player.didOnLadder = true;
+          player.shipWithin = null;
+          player.withinShip = false;
+          player.didOnRope = true;
+          player.onRope = true;
+          ship.hasPlayers[player.id] = player; 
+        }
+      }
+    });
+    if(player.didOnRope){
+      player.onRope = true;
+    }else{player.onRope = false;}
+    player.didOnRope = false;
 
     this.ships.filter(player => !player.dead,).forEach(ship =>{
       //player ship Collision
       var {push,vec2, i,happened} = blockShipCollision(player,ship);
       if(happened){  
+        if(player.holdingPower){
+          ship.munitions[player.holdingPower]++;
+          player.holdingPower = null;
+        }
         if(vec2){
           player.rotateTo(ship.direction);
           player.setMove(vec2);
@@ -305,6 +335,10 @@ class Game {
       var happened = trapDoorCollision(player,ship.trapDoor);
       if(happened){
         var {push,vec2} = happened;
+        if(player.holdingPower){
+          ship.munitions[player.holdingPower]++;
+          player.holdingPower = null;
+        }
         if(vec2){
           player.rotateTo(ship.direction);
           player.setMove(vec2);
@@ -323,6 +357,10 @@ class Game {
       if(!player.movedOnLadder){
         var happened = trapDoorCollision(player,ship.platform);
         if(happened){  
+          if(player.holdingPower){
+            ship.munitions[player.holdingPower]++;
+            player.holdingPower = null;
+          }
           var {push, vec2} = happened;
           if(vec2){
             player.setMove(new Vector(ship.points[1].x - ship.points[0].x, ship.points[1].y - ship.points[0].y).unit());
@@ -388,7 +426,7 @@ class Game {
       player.didOnLadder = false;
 
       //player within ship fix
-      if(!player.didWithinShip){
+      if(!player.didWithinShip && !player.onRope){
         player.withinShip = false;
         player.shipWithin = null;
         player.setMove(new Vector(1,0));
@@ -411,6 +449,10 @@ class Game {
         if(happened){
           var {push} = happened;
           player.displace.add(push);
+          if(planet.power){
+            player.holdingPower = planet.power +'';
+            planet.power = null;
+          }
         }
       });
     });
@@ -482,7 +524,12 @@ class Game {
           if(ship.cannonBalls[id]){
             var collision = cannonBallShipCollision(ship.cannonBalls[id],otherShip);
             if(collision){
-              otherShip.takeDamage(collision.u, collision.j,ship.cannonBalls[id].power);
+              if(ship.cannonBalls[id].type == 'cannonBall' || ship.cannonBalls[id].type == 'killShot'){
+                otherShip.takeDamage(collision.u, collision.j,ship.cannonBalls[id].power);
+              }
+              else if(ship.cannonBalls[id].type == 'speedBoost'){
+                otherShip.speedBoostTimer = 10;
+              }
               delete ship.cannonBalls[id];
             }
           }

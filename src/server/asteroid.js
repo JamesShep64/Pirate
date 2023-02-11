@@ -29,7 +29,7 @@ class Asteroid{
         if(this.t > 1 || this.t < 0){
             this.turn *= -1;
         }
-        this.t +=  (this.turn * 2)/this.mag;
+        this.t +=  (this.turn * 4.5)/this.mag;
         this.netVelocity.x = (this.start.x +  this.t * this.line.x - this.pos.x)/(dt*Constants.VELOCITY_MULTIPLIER);
         this.netVelocity.y = (this.start.y +  this.t * this.line.y - this.pos.y)/(dt*Constants.VELOCITY_MULTIPLIER);
         this.pos.x += this.netVelocity.x * dt*Constants.VELOCITY_MULTIPLIER;

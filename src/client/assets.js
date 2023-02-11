@@ -10,6 +10,12 @@ const ASSET_NAMES = [
   'page4.gif',
   'page5.gif',
   'page6.gif',
+  'upArrow.png',
+  'downArrow.png',
+  'cannonBall.svg',
+  'grapple.svg',
+  'killShot.svg',
+  'speedBoost.svg',
 ];
 
 const assets = {};
