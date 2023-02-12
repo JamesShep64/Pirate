@@ -118,7 +118,7 @@ class PirateShip extends Polygon{
     this.outOfBounds = false;
     this.outOfBoundsTimer = 0;
     //munitions
-    this.munitions = {cannonBall:'a',grapple:'a',speedBoost:2,killShot:0,};
+    this.munitions = {cannonBall:'a',grapple:'a',speedBoost:2,killShot:1,};
     //speed Boost
     this.speedBoostTimer = 0;
     
@@ -126,15 +126,16 @@ class PirateShip extends Polygon{
 
   spawn(){
     const generatePosition = () => {
-      const x = Constants.MAP_WIDTH * (.2 + .8*Math.random());
-      const y = Constants.MAP_HEIGHT * (.2 + .8*Math.random());
-      this.game.planets.forEach(planet =>{
+      const x = Constants.MAP_WIDTH * (.2 + .6*Math.random());
+      const y = Constants.MAP_HEIGHT * (.2 + .6*Math.random());
+      //const y = Constants.MAP_HEIGHT - 400;
+      this.planets.forEach(planet =>{
         if(withinRect(x,y,planet,500,280)){
           generatePosition();
         }
       });
-      this.game.ships.forEach(planet =>{
-        if(withinRect(x,y,planet,440,440)){
+      this.ships.forEach(ship =>{
+        if(withinRect(x,y,ship,500,440)){
           generatePosition();
         }
       });

@@ -176,6 +176,8 @@ class Cannon{
         this.isLoading = false;
         this.loadTimer = 0;        
         var numOfShots = 0;
+        if(!this.line)
+            numOfShots--;
         Object.values(this.ship.munitions).forEach(n=>{
             if(n == 'a' || n > 0){
                 numOfShots++;
@@ -188,10 +190,23 @@ class Cannon{
         else{
             this.selected = 0;
         }
+        if(!this.line){
+            numOfShots++;
+        }
         if(this.selected == 0){this.chosen = 'cannonBall';}
-        else if(this.selected == 1){this.chosen = 'grapple'}
-        if(numOfShots == 3 && this.selected == 2){
+        else if(this.selected == 1 && this.line){this.chosen = 'grapple'}
+        
+        else if(numOfShots == 3 && ((this.selected == 2 && this.line) || (this.selected == 1 && !this.line))){
             if(this.ship.munitions.speedBoost > 0){this.chosen = 'speedBoost';}
+            else if(this.ship.munitions.killShot > 0){this.chosen = 'killShot';}
+        }
+        else if(numOfShots == 4){
+            if(this.ship.munitions.speedBoost > 0 && this.ship.munitions.killShot > 0){
+                if((this.selected == 2 && this.line) || (this.selected == 1 && !this.line))
+                    this.chosen = 'speedBoost';
+                if(((this.selected == 3 && this.line) || (this.selected == 2 && !this.line)))
+                    this.chosen = 'killShot';
+            }
             else if(this.ship.munitions.killShot > 0){this.chosen = 'killShot';}
         }
     }

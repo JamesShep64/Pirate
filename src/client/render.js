@@ -219,7 +219,7 @@ function renderOcean(playerX,playerY){
     context.closePath();
     var grd = context.createLinearGradient(
       canvasX,
-      canvasY + Constants.MAP_HEIGHT - 140,
+      canvasY + Constants.MAP_HEIGHT - 180,
       canvasX,
       canvasY + Constants.MAP_HEIGHT +1000
     );
@@ -522,7 +522,87 @@ function drawTrapDoor(block, me){
   }
   context.stroke();
 }
+function drawMunitions(ship,player,cannon,isUpper){
+  //draw munitions
+  var numOfShots = 1;
+  if(isUpper){
+    numOfShots++;
+  }
+  if(cannon.beingUsed){
+    Object.values(ship.munitions).forEach(n=>{
+      if(n != 'a' || n > 0){
+        numOfShots++;
+      }
+    });
+    context.save();
+    var column = 0;
+    context.translate(canvas.width/2 - player.eyesX + cannon.x,canvas.height/2 - player.eyesY + cannon.y);
+    context.rotate(ship.direction);
+    context.globalAlpha = .8;
+    var cannonBall = new Image();
+    cannonBall.src = '/assets/'+'cannonBall'+'.svg';
+    context.drawImage(cannonBall,-10*numOfShots + 25*column,-40,40,40);
+    if(column == cannon.selected){
+      context.lineWidth = 5;
+      context.strokeStyle = 'blue';
+    }
+    context.strokeRect(-10*numOfShots + 25*column,-40,22,22);
+    context.lineWidth = 1;
+    context.strokeStyle = 'black';
 
+    if(isUpper){
+    column++;
+    var grapple = new Image();
+    grapple.src = '/assets/'+'grapple'+'.svg';
+    context.drawImage(grapple,-10*numOfShots + 25*column,-40,40,40);
+    if(column == cannon.selected){
+      context.strokeStyle = 'blue';
+      context.lineWidth = 5;
+    }
+    context.strokeRect(-10*numOfShots + 25*column,-40,22,22);
+    context.strokeStyle = 'black';
+    context.lineWidth = 1;
+  }
+
+    if(ship.munitions['speedBoost'] > 0){
+    column++;
+    var speedBoost = new Image();
+    speedBoost.src = '/assets/'+'speedBoost'+'.svg';
+    context.drawImage(speedBoost,-10*numOfShots + 25 * column,-40,40,40);
+    if(column == cannon.selected){
+      context.strokeStyle = 'blue';
+      context.lineWidth = 5;
+    }
+    context.strokeRect(-10*numOfShots+25*column,-40,22,22);
+    context.lineWidth = 1;
+    context.strokeStyle = 'black';
+    context.font = "25px serif";
+    context.fillStyle = 'black';
+    context.fillText(ship.munitions.speedBoost+'',-10*numOfShots + 25 * column+ 5,-20,40);
+    }
+
+    if(ship.munitions['killShot'] > 0){
+      column++;
+      var speedBoost = new Image();
+      speedBoost.src = '/assets/'+'killShot'+'.svg';
+      context.drawImage(speedBoost,-10*numOfShots + 25 * column,-40,40,40);
+      if(column == cannon.selected){
+        context.strokeStyle = 'blue';
+        context.lineWidth = 5;
+      }
+      context.strokeRect(-10*numOfShots+25*column,-40,22,22);
+      context.lineWidth = 1;
+      context.strokeStyle = 'black';
+      context.font = "25px serif";
+      context.fillStyle = 'black';
+      context.fillText(ship.munitions.killShot+'',-10*numOfShots + 25 * column+ 5,-20,40);
+      }
+
+    context.restore();
+    context.globalAlpha = 1;
+
+  }
+}
 function drawShipParts(ship,player){ 
     context.strokeStyle = 'black';
     drawCannonWire(ship.cannonWire1, player, ship.x, ship.y);
@@ -540,82 +620,7 @@ function drawShipParts(ship,player){
       context.fillStyle = "rgb("+(ship.cannon1.loadTimer*18).toString()+", 10, 10)";
       context.fill();
       context.fillStyle = 'black';
-    //draw munitions
-    var numOfShots = 2;
-    if(ship.cannon1.beingUsed){
-      Object.values(ship.munitions).forEach(n=>{
-        if(n != 'a' || n > 0){
-          numOfShots++;
-        }
-      });
-      context.save();
-      var column = 0;
-      context.translate(canvas.width/2 - player.eyesX + ship.cannon1.x,canvas.height/2 - player.eyesY + ship.cannon1.y);
-      context.rotate(ship.direction);
-      context.globalAlpha = .8;
-      var cannonBall = new Image();
-      cannonBall.src = '/assets/'+'cannonBall'+'.svg';
-      context.drawImage(cannonBall,-10*numOfShots + 25*column,-40,40,40);
-      if(column == ship.cannon1.selected){
-        context.lineWidth = 5;
-        context.strokeStyle = 'blue';
-      }
-      context.strokeRect(-10*numOfShots + 25*column,-40,22,22);
-      context.lineWidth = 1;
-      context.strokeStyle = 'black';
-
-
-      column++;
-      var grapple = new Image();
-      grapple.src = '/assets/'+'grapple'+'.svg';
-      context.drawImage(grapple,-10*numOfShots + 25*column,-40,40,40);
-      if(column == ship.cannon1.selected){
-        context.strokeStyle = 'blue';
-        context.lineWidth = 5;
-      }
-      context.strokeRect(-10*numOfShots + 25*column,-40,22,22);
-      context.strokeStyle = 'black';
-      context.lineWidth = 1;
-
-
-      if(ship.munitions['speedBoost'] > 0){
-      column++;
-      var speedBoost = new Image();
-      speedBoost.src = '/assets/'+'speedBoost'+'.svg';
-      context.drawImage(speedBoost,-10*numOfShots + 25 * column,-40,40,40);
-      if(column == ship.cannon1.selected){
-        context.strokeStyle = 'blue';
-        context.lineWidth = 5;
-      }
-      context.strokeRect(-10*numOfShots+25*column,-40,22,22);
-      context.lineWidth = 1;
-      context.strokeStyle = 'black';
-      context.font = "25px serif";
-      context.fillStyle = 'black';
-      context.fillText(ship.munitions.speedBoost+'',-10*numOfShots + 25 * column+ 5,-20,40);
-      }
-
-      if(ship.munitions['killShot'] > 0){
-        column++;
-        var speedBoost = new Image();
-        speedBoost.src = '/assets/'+'killShot'+'.svg';
-        context.drawImage(speedBoost,-10*numOfShots + 25 * column,-40,40,40);
-        if(column == ship.cannon1.selected){
-          context.strokeStyle = 'blue';
-          context.lineWidth = 5;
-        }
-        context.strokeRect(-10*numOfShots+25*column,-40,22,22);
-        context.lineWidth = 1;
-        context.strokeStyle = 'black';
-        context.font = "25px serif";
-        context.fillStyle = 'black';
-        context.fillText(ship.munitions.killShot+'',-10*numOfShots + 25 * column+ 5,-20,40);
-        }
-
-      context.restore();
-      context.globalAlpha = 1;
-
-    }
+      drawMunitions(ship,player,ship.cannon1,true);
       //drawLowerCannon1
       var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyesY;
@@ -626,6 +631,7 @@ function drawShipParts(ship,player){
       context.fillStyle = "rgb("+(ship.cannonLower1.loadTimer*18).toString()+", 10, 10)";
       context.fill();
       context.fillStyle = 'black';
+      drawMunitions(ship,player,ship.cannonLower1);
   
       //drawLowerCannon2
       var canvasX = canvas.width / 2 + ship.cannonLower2.x - player.eyesX;
@@ -637,6 +643,7 @@ function drawShipParts(ship,player){
       context.fillStyle = "rgb("+(ship.cannonLower2.loadTimer*18).toString()+", 10, 10)";
       context.fill();
       context.fillStyle = 'black';
+      drawMunitions(ship,player,ship.cannonLower2);
   
       //draw ladder, mast, flag, and trap door
       drawTrapDoor(ship.trapDoor,player);
