@@ -99,11 +99,11 @@ function onDisconnect() {
   Object.values(lobbies).every(lobby =>{
       if(this.id == lobby.id){
         if(Object.keys(lobby.crew).length == 1){
-          game.removeCrew(lobby.ogID);
+          game.removeCrew(lobby);
           Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
             socket.emit(Constants.MSG_TYPES.CREATOR_LEFT_GAME);
           });
-          delete lobbies[this.id]; 
+          delete lobbies[this.ogID]; 
           return;
        }
        else{
