@@ -10,6 +10,7 @@ class Lobby{
         this.sockets[socket.id] = socket;
         this.firstUpdate = true;
         this.ship;
+        this.ogID = socket.id;
         this.colorI = 0;
     }
 
