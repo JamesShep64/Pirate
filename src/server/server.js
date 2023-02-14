@@ -96,7 +96,7 @@ function handleRelease(key){
 
 
 function onDisconnect() {
-  Object.values(lobbies).every(lobby =>{
+  Object.values(lobbies).forEach(lobby =>{
       if(this.id == lobby.id){
         if(Object.keys(lobby.crew).length == 1){
           game.removeCrew(lobby);
