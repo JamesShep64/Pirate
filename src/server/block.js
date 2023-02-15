@@ -39,8 +39,6 @@ class Block extends Polygon{
     //COLLISION
     this.radius = Math.sqrt((length/2) * (length/2) + (height/2) * (height/2));
     this.gotPushed = false;
-    this.repeats1 = [0,1];
-    this.repeats2 = [2,3];
   }    
   
   update(dt) {

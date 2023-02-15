@@ -10,7 +10,7 @@ class Lobby{
         this.sockets[socket.id] = socket;
         this.firstUpdate = true;
         this.ship;
-        this.ogID = socket.id;
+        this.idOG = socket.id;
         this.colorI = 0;
     }
 
@@ -50,7 +50,7 @@ class Lobby{
         this.update();
     }
     createUpdate(){
-        return {crew : Object.values(this.crew), creator:this.creator,id : this.id}
+        return {crew : Object.values(this.crew), creator:this.creator,id : this.idOG}
     }
 
 }

@@ -233,7 +233,7 @@ class PirateShip extends Polygon{
     }
         //speedBoost TImer
     if(this.speedBoostTimer > 0){
-      this.speedBoostTimer-=dt;
+      this.speedBoostTimer-=dt * 4;
     }
     if(this.speedBoostTimer < 0){
       this.speedBoostTimer = 0;

@@ -19,7 +19,7 @@ function blockBlockCollision(block1, block2){
     var floor = block2.floor;
     var repeats1 = block2.repeats1;
     var repeats2 = block2.repeats2;
-    for(var i = 0; i < 2; i++){
+    for(var i = 0; i < 4; i++){
         var zero1 = block1.pos;
         var vec1 = block1.colPoly.points[i];
         for(var j = 0; j < block2.points.length; j++){

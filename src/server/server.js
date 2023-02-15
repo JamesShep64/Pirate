@@ -1,3 +1,4 @@
+
 const express = require('express');
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
@@ -32,7 +33,11 @@ function createLobbyLink(id){
   app.get('/'+id,(req,res)=>{
     res.redirect('/');
     didJoinLobby = true;
-    lobbyID = id;
+    Object.values(lobbies).forEach(lobby =>{
+      if(lobby.idOG == id){
+        lobbyID = lobby.id;
+      }
+    });
   });
 }
 // Setup socket.io
@@ -103,12 +108,15 @@ function onDisconnect() {
           Object.values(lobby.sockets).filter(socket => socket.id != this.id,).forEach(socket =>{
             socket.emit(Constants.MSG_TYPES.CREATOR_LEFT_GAME);
           });
-          delete lobbies[this.ogID]; 
+          delete lobbies[this.id]; 
           return;
        }
        else{
+        var fresh = lobbies[this.id];
         game.removePlayer(this);
         lobby.removeLeader(this);
+        delete lobbies[this.id];
+        lobbies[fresh.id] = fresh;
         return;
        }
       }

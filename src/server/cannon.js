@@ -245,7 +245,7 @@ class Cannon{
 
     loadCannonBall(dt){
         if(this.ammo > 0){
-            if(this.loadTimer < 12){
+            if(this.loadTimer < 12 && !this.ship.grapple){
                 this.loadTimer += dt * 3;
             }
         }

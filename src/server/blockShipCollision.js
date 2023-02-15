@@ -19,7 +19,7 @@ function blockShipCollision(block1, block2){
     var vec2T;
     var iT;
     var happened = false;
-    for(var i = 0; i < 2; i++){
+    for(var i = 0; i < 4; i++){
         var zero1 = block1.pos;
         if(block1.constructor.name == 'Block'){var vec1 = block1.colPoly.points[i];}
         else{var vec1 = block1.points[i];}
