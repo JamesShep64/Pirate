@@ -135,22 +135,20 @@ class Game {
         this.planets.push(new Planet(xPos,yPos,pow));
       }
     }
-    var ts = [];
-    for(var i = 0; i<20;i++){
+    var t = 0;
+    for(var i = 0; i<15;i++){
       var topPoint = new Vector(.7 * Constants.MAP_WIDTH +  Constants.MAP_WIDTH * .4 * Math.random(),-500);
       var bottomPoint = new Vector(.7 * Constants.MAP_WIDTH +  Constants.MAP_WIDTH * .4 * Math.random(),Constants.MAP_HEIGHT + 500);
-      this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,topPoint,new Vector(bottomPoint.x-topPoint.x,bottomPoint.y - topPoint.y));
-      this.asteroids[this.asteroidID].generateT(ts);
-      ts.push(this.asteroids[this.asteroidID].t);
+      this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,topPoint,new Vector(bottomPoint.x-topPoint.x,bottomPoint.y - topPoint.y),t);
+      t+=.066;
       this.asteroidID++;
     }
-    var ts = [];
-    for(var i = 0; i<20;i++){
+    t = 0;
+    for(var i = 0; i<15;i++){
       var topPoint = new Vector(Constants.MAP_WIDTH * .3 * Math.random() - Constants.MAP_WIDTH * .1 * Math.random(),-500);
       var bottomPoint = new Vector(Constants.MAP_WIDTH * .3 * Math.random() - Constants.MAP_WIDTH * .1 * Math.random(),Constants.MAP_HEIGHT + 500);
-      this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,topPoint,new Vector(bottomPoint.x-topPoint.x,bottomPoint.y - topPoint.y));
-      this.asteroids[this.asteroidID].generateT(ts);
-      ts.push(this.asteroids[this.asteroidID].t);
+      this.asteroids[this.asteroidID] = new Asteroid(this.asteroidID,topPoint,new Vector(bottomPoint.x-topPoint.x,bottomPoint.y - topPoint.y),t);
+      t+=.066;
       this.asteroidID++;
     }
   }

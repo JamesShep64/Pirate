@@ -251,7 +251,7 @@ function renderBackground(playerX, playerY){
     for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=40){
       x = Math.ceil(x / 40) * 40;
       y = Math.ceil(y/40) * 40;
-      if((x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && ((x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 1760 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0)))){
+      if(((y < Constants.MAP_HEIGHT * .35 && y > 1000) && (x % 1420 == 0 && y%1640 == 0|| x % 1560 == 0 && y%2000 == 0|| x % 900 == 0 && y%1000 == 0)) || (x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && ((x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 1760 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0)))){
         context.save();
         if(y < Constants.MAP_HEIGHT * .35){
         context.fillStyle = "#FFDB51";
