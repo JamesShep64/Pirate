@@ -129,14 +129,14 @@ class PirateShip extends Polygon{
       const x = Constants.MAP_WIDTH * (.2 + .6*Math.random());
       const y = Constants.MAP_HEIGHT * (.2 + .6*Math.random());
       //const y = Constants.MAP_HEIGHT - 400;
-      this.planets.forEach(planet =>{
+      this.game.planets.forEach(planet =>{
         if(withinRect(x,y,planet,500,280)){
-          generatePosition();
+          return generatePosition();
         }
       });
-      this.ships.forEach(ship =>{
+      this.game.ships.forEach(ship =>{
         if(withinRect(x,y,ship,500,440)){
-          generatePosition();
+         return generatePosition();
         }
       });
       return {x,y};
@@ -564,8 +564,8 @@ class PirateShip extends Polygon{
       }
   }
     var damage = new Vector(this.points[j].x +(surface.x) * u, this.points[j].y + (surface.y) * u);
-    this.explosions[this.explosionID] = new Explosion(this.explosionID, this.pos.x + damage.x, this.pos.y + damage.y,power,surface,damage,this);
-    this.explosionID += 'a';
+    this.explosions[this.id + this.explosionID.toString()] = new Explosion(this.id + this.explosionID.toString(), this.pos.x + damage.x, this.pos.y + damage.y,power,surface,damage,this);
+    this.explosionID++;
 
     for(var i = 0; i < this.damages.length; i++){
       if(damage.x < this.damages[i].point.x + 20 && damage.x > this.damages[i].point.x - 20 && damage.y < this.damages[i].point.y + 20 && damage.y > this.damages[i].point.y - 20){

@@ -286,6 +286,7 @@ class Cannon{
             loadTimer : this.loadTimer,
             selected: this.selected,
             beingUsed : this.beingUsed,
+            direction:this.direction,
 
         }
     }

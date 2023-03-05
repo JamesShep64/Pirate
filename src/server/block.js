@@ -138,7 +138,8 @@ class Block extends Polygon{
     x : this.pos.x,
     y : this.pos.y,
     col : this.isCol,
-    points: this.points
+    points: this.points,
+    direction: this.direction,
   };
   }
 }

@@ -31,6 +31,7 @@ class Explosion{
             radius : this.radius,
             hitBoxExist : this.hitboxExist,
             timer : this.timer,
+            id : this.id,
         }
     }
 }

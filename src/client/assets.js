@@ -16,6 +16,14 @@ const ASSET_NAMES = [
   'grapple.svg',
   'killShot.svg',
   'speedBoost.svg',
+  'asteroid.svg',
+  'pirate.svg',
+  'barrel.svg',
+  'cannonBarrel.svg',
+  'cannonTurret.svg',
+  'planet.svg',
+
+  
 ];
 
 const assets = {};

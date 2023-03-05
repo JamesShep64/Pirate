@@ -11,6 +11,10 @@ module.exports = Object.freeze({
   MAP_SIZE: 3000,
   MAP_HEIGHT : 3000,
   MAP_WIDTH : 6000,
+  PLAYER_HEIGHT: 50,
+  PLAYER_WIDTH: 25,
+  BLOCK_HEIGHT: 30,
+  BLOCK_WIDTH: 25,
 
   MSG_TYPES: {
     JOIN_GAME: 'join_game',

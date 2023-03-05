@@ -51,12 +51,12 @@ class Game {
       //const y = Constants.MAP_HEIGHT - 400;
       this.planets.forEach(planet =>{
         if(withinRect(x,y,planet,500,280)){
-          generatePosition();
+          return generatePosition();
         }
       });
       this.ships.forEach(ship =>{
         if(withinRect(x,y,ship,500,440)){
-          generatePosition();
+          return generatePosition();
         }
       });
       return {x,y};
@@ -73,24 +73,24 @@ class Game {
     if(x > Constants.MAP_WIDTH/2){
       this.ships[this.ships.length-1].turn = -1;
     }
-    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x + 40,y-10,Constants.BLOCK_SIZE,Constants.BLOCK_SIZE);
+    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x + 40,y-10,Constants.BLOCK_WIDTH,Constants.BLOCK_HEIGHT);
     this.blockID++;
-    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x - 40,y-10,Constants.BLOCK_SIZE,Constants.BLOCK_SIZE);
+    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x - 40,y-10,Constants.BLOCK_WIDTH,Constants.BLOCK_HEIGHT);
     this.blockID++;
-    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x + 80,y-10,Constants.BLOCK_SIZE,Constants.BLOCK_SIZE);
+    this.blocks[this.blockID.toString()] = new Block(this.blockID.toString(),x + 80,y-10,Constants.BLOCK_WIDTH,Constants.BLOCK_HEIGHT);
     this.blockID++;
     this.teamID++;
 
     Object.keys(lobby.crew).forEach(id =>{
     this.sockets[id] = lobby.sockets[id];
-    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,PLAYER_SIZE, PLAYER_SIZE,this.ships[this.ships.length-1],this.colors[lobby.colorI]);
+    this.players[id] = new PlayerObject(id, lobby.crew[id], x, y,Constants.PLAYER_WIDTH, Constants.PLAYER_HEIGHT,this.ships[this.ships.length-1],this.colors[lobby.colorI]);
     lobby.sockets[id].emit(Constants.MSG_TYPES.CREATOR_JOINED_GAME);
     lobby.colorI++;
   });
   }
   addStragler(socket,username,lobby){
     this.sockets[socket.id] = socket;
-    this.players[socket.id] = new PlayerObject(socket.id, username, 0, 0,PLAYER_SIZE, PLAYER_SIZE,lobby.ship,this.colors[lobby.colorI]);
+    this.players[socket.id] = new PlayerObject(socket.id, username, 0, 0,Constants.PLAYER_WIDTH, Constants.PLAYER_HEIGHT,lobby.ship,this.colors[lobby.colorI]);
     this.players[socket.id].spawn();
     lobby.colorI++;
   }
@@ -127,7 +127,7 @@ class Game {
 
 
   createMap(){
-    for(var x =Constants.MAP_WIDTH * .2; x < Constants.MAP_WIDTH * .8; x+=2000){
+    for(var x =Constants.MAP_WIDTH * .2; x < Constants.MAP_WIDTH * .8; x+=1500){
       for(var y = 1000; y < Constants.MAP_HEIGHT; y+=1100){
         var xPos = (.5 - Math.random()) * 600 + x;
         var yPos = (.5 - Math.random()) * 600 + y;

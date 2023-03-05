@@ -37,6 +37,13 @@ function render() {
     drawPoly(planet,me);
     context.fillStyle = '#278c0b';
     context.fill();
+    var image = new Image();
+    context.save();
+    context.translate(canvas.width/2 - me.eyesX + planet.x ,canvas.height/2 - me.eyesY + planet.y);
+    image.src = '/assets/'+'planet'+'.svg';
+    context.drawImage(image, -60,-60,120,120);
+    context.fillStyle = 'black';
+    context.restore();
     if(planet.power){
       var canvasX = canvas.width / 2 + planet.x - me.eyesX;
       var canvasY = canvas.height / 2 + planet.y - me.eyesY;
@@ -48,18 +55,19 @@ function render() {
 
   //draw asteroids
   asteroids.forEach(a =>{
-    var canvasX = canvas.width / 2 + a.x - me.eyesX;
-    var canvasY = canvas.height / 2 + a.y - me.eyesY;
-    context.beginPath();
-    context.arc(canvasX,canvasY,a.radius,0,2 * Constants.PI);
-    context.stroke();
-    context.fillStyle = '#a3a19d';
-    context.fill();
+    var image = new Image();
+    context.save();
+    context.translate(canvas.width/2 - me.eyesX + a.x ,canvas.height/2 - me.eyesY + a.y);
+    context.rotate(a.direction);
+    image.src = '/assets/'+'asteroid'+'.svg';
+    context.drawImage(image, -a.radius,-a.radius,a.radius*2,a.radius*2);
     context.fillStyle = 'black';
+    context.restore();
 
   });
   //draw ship hulls
   ships.forEach(ship =>{
+    context.fillStyle = '#412515';
     drawShip(ship,me);
     context.fillStyle = 'black';
   });
@@ -93,9 +101,13 @@ function render() {
   
   //draw me
   if(!me.dead){
-    drawPoly(me,me);
-    context.fillStyle = me.color;
-    context.fill();
+    var character = new Image();
+    context.save();
+    character.src = '/assets/'+'pirate'+'.svg';
+    context.translate(canvas.width/2,canvas.height/2);
+    context.rotate(me.direction);
+    context.drawImage(character, -20,-35,40,60);
+    context.restore();
     if(me.holdingPower){
       var boost = new Image();
       context.save();
@@ -105,12 +117,6 @@ function render() {
       context.drawImage(boost, 10,0,50,50);
       context.restore();
     }
-  }
-  else{
-    context.globalAlpha = .6;
-    context.font = "200px papyrus";
-    context.fillText("R.I.P",canvas.width / 2 - 200,canvas.height / 2 + 75);
-    context.globalAlpha = 1;
   }
 
   //draw others
@@ -131,9 +137,18 @@ function render() {
 
   //draw blocks
   blocks.forEach(block => {
+    /*
     drawPoly(block,me);
     context.fillStyle = "rgb(210,180,140)";
     context.fill();
+    */
+    var barrel = new Image();
+    context.save();
+    barrel.src = '/assets/'+'barrel'+'.svg';
+    context.translate(canvas.width/2 - me.eyesX + block.x,canvas.height/2 - me.eyesY + block.y);
+    context.rotate(block.direction);
+    context.drawImage(barrel, -15,-15,30,30);
+    context.restore();
   });
   //draw Explosions
   explosions.forEach(explosion =>{
@@ -161,6 +176,12 @@ function render() {
   if(Math.round(me.outOfBoundsTimer) > 0)
     context.fillText(Math.round(me.outOfBoundsTimer).toString(),canvas.width / 2 - 100,canvas.height / 2 + 100);
   context.globalAlpha = 1;
+  if(me.dead){
+    context.globalAlpha = .6;
+    context.font = "200px papyrus";
+    context.fillText("R.I.P",canvas.width / 2 - 200,canvas.height / 2 + 75);
+    context.globalAlpha = 1;
+  }
 
 }
 
@@ -251,7 +272,7 @@ function renderBackground(playerX, playerY){
     for(var y = playerY - canvas.height/2 - 400; y < canvas.height/2 + playerY + 400; y +=40){
       x = Math.ceil(x / 40) * 40;
       y = Math.ceil(y/40) * 40;
-      if(((y < Constants.MAP_HEIGHT * .35 && y > 1000) && (x % 1420 == 0 && y%1640 == 0|| x % 1560 == 0 && y%2000 == 0|| x % 900 == 0 && y%1000 == 0)) || (x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && ((x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 1760 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0)))){
+      if(y!= 0 && (((y < Constants.MAP_HEIGHT * .35 && y > 1000) && (x % 1420 == 0 && y%1640 == 0|| x % 1560 == 0 && y%2000 == 0|| x % 900 == 0 && y%1000 == 0)) || (x % 3080 == 0 && y % 2360 == 0) ||((x != 0 && y != 0) && ((x % 2120 == 0 && y % 1880 == 0)) || (x % 1400 == 0 && y % 1760 == 0) || ((x != 0 && y != 0) && (x % 1240 == 0 && y % 1000 == 0))))){
         context.save();
         if(y < Constants.MAP_HEIGHT * .35){
         context.fillStyle = "#FFDB51";
@@ -332,7 +353,6 @@ function drawPoly(block, me){
 function drawShip(ship,me){
   var canvasX = canvas.width / 2 + ship.x - me.eyesX;
   var canvasY = canvas.height / 2 + ship.y - me.eyesY;
-  context.restore();
   var o;
   context.beginPath();
   var damageCurves = [];
@@ -457,8 +477,22 @@ function drawShip(ship,me){
     }
   }
   context.closePath();
-  context.fillStyle = '#52300d';
-  context.fill();
+  
+  var boost = new Image();
+  boost.src = '/assets/'+'woodTexture'+'.svg';
+  var pattern = context.createPattern(boost,'no-repeat');  
+  var patternPromise = new Promise((resolve,reject) =>{
+    context.save();
+    context.translate(canvas.width/2 - me.eyesX + ship.x + ship.points[0].x,canvas.height/2 - me.eyesY + ship.y+ship.points[0].y);
+    context.rotate(ship.direction);
+    context.fillStyle = pattern;
+    if(context.fillStyle == pattern)
+      resolve('b');
+    else reject();
+  });
+  patternPromise.then(context.fill(),()=>{  console.log(boost);context.fillStyle = pattern;context.fill()});
+  
+  context.restore();
   damageCurves.forEach(curve =>{
     context.beginPath();
     context.moveTo(curve.start.x, curve.start.y);
@@ -609,40 +643,67 @@ function drawShipParts(ship,player){
     context.restore();
   
       context.strokeStyle = 'black';
+      context.fillStyle = 'black';
       context.lineWidth = .5;
       //draw cannon1
       var canvasX = canvas.width / 2 + ship.cannon1.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannon1.y - player.eyesY;
-      context.beginPath();
-      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannon1.ammo);
-      context.fill();
+      /*
       drawPoly(ship.cannon1,player);
       context.fillStyle = "rgb("+(ship.cannon1.loadTimer*18).toString()+", 10, 10)";
       context.fill();
       context.fillStyle = 'black';
+      */
+      ///
+      var cannonBarrel = new Image();
+      cannonBarrel.src = '/assets/'+'cannonBarrel'+'.svg';
+      context.save();
+      context.translate(canvasX,canvasY);
+      context.rotate(ship.cannon1.direction);
+      context.drawImage(cannonBarrel, -8,-15,55,20);
+      context.restore();
+
+      var cannonTurret = new Image();
+      cannonTurret.src = '/assets/'+'cannonTurret'+'.svg';
+      context.save();
+      context.translate(canvasX,canvasY);
+      context.rotate(ship.direction);
+      context.drawImage(cannonTurret, -15,-18,25,25);
+      context.restore();
+      ///
       drawMunitions(ship,player,ship.cannon1,true);
       //drawLowerCannon1
       var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyesY;
-      context.beginPath();
-      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower1.ammo);
-      context.fill();
-      drawPoly(ship.cannonLower1,player);
-      context.fillStyle = "rgb("+(ship.cannonLower1.loadTimer*18).toString()+", 10, 10)";
-      context.fill();
-      context.fillStyle = 'black';
+      context.save();
+      context.translate(canvasX,canvasY);
+      context.rotate(ship.cannonLower1.direction);
+      context.drawImage(cannonBarrel, -8,-14,55,20);
+      context.restore();
+
+      context.save();
+      context.translate(canvasX,canvasY);
+      context.rotate(ship.direction);
+      context.drawImage(cannonTurret, -13,-15,25,25);
+      context.restore();
+
       drawMunitions(ship,player,ship.cannonLower1);
   
       //drawLowerCannon2
       var canvasX = canvas.width / 2 + ship.cannonLower2.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannonLower2.y - player.eyesY;
-      context.beginPath();
-      context.arc(canvasX, canvasY, 10, 0, (2*Constants.PI/5) * ship.cannonLower2.ammo);
-      context.fill();
-      drawPoly(ship.cannonLower2,player);
-      context.fillStyle = "rgb("+(ship.cannonLower2.loadTimer*18).toString()+", 10, 10)";
-      context.fill();
-      context.fillStyle = 'black';
+      context.save();
+      context.translate(canvasX,canvasY);
+      context.rotate(ship.cannonLower2.direction);
+      context.drawImage(cannonBarrel, -8,-14,55,20);
+      context.restore();
+
+      context.save();
+      context.translate(canvasX,canvasY);
+      context.rotate(ship.direction);
+      context.drawImage(cannonTurret, -13,-15,25,25);
+      context.restore();
+
       drawMunitions(ship,player,ship.cannonLower2);
   
       //draw ladder, mast, flag, and trap door

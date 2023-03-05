@@ -507,6 +507,7 @@ serializeForUpdate() {
     dead : this.dead,
     outOfBoundsTimer : this.outOfBoundsTimer,
     holdingPower : this.holdingPower,
+    direction : this.direction,
 
   };
 }

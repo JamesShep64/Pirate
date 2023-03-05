@@ -2,6 +2,7 @@
 // https://victorzhou.com/blog/build-an-io-game-part-1/#7-client-state
 import { updateLeaderboard } from './leaderboard';
 import { updateLobbyBoard } from './lobby';
+const Constants = require('../shared/constants');
 
 
 // The "current" state will always be RENDER_DELAY ms behind server time.
@@ -92,6 +93,7 @@ function interpolateObject(object1, object2, ratio) {
     if (key === 'x' || key === 'y' || key == 'eyesX' || key == 'eyesY' || key =='xEnd' || key == 'yEnd' || key =='timer'){
       interpolated[key] = object1[key] + (object2[key] - object1[key]) * ratio;
     }
+    
     else if(key == 'points'){
       interpolated[key] = object1[key];
       for(var i = 0; i<object1[key].length;i++){
@@ -201,6 +203,7 @@ function interpolateShip(object1, object2, ratio){
 }
 
 function interpolateShips(objects1, objects2, ratio){
+
   return objects1.map(o => interpolateShip(o, objects2.find(o2 => o.id === o2.id), ratio));
 }
 
