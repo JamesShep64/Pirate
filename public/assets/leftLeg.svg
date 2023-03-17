@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 372 492" width="372px" height="492px" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <g transform="matrix(1, 0, 0, 1.190766, 0, -93.700502)" bx:origin="0.499497 0.5">
+    <path style="stroke: rgb(0, 0, 0); fill: rgb(208, 32, 32);" d="M 137.665 394.492 C 116.053 394.449 110.348 445.398 119.609 446.467 L 152.85 447.337 C 174.174 444.225 198.486 389.061 189.584 390.36 L 137.665 394.492 Z"/>
+    <path style="fill: rgb(129, 122, 122); stroke: rgb(0, 0, 0);" d="M 174.854 428.823 L 177.897 391.185"/>
+    <path style="fill: rgb(129, 122, 122); stroke: rgb(0, 0, 0);" d="M 167.194 437.26 L 164.696 391.968"/>
+    <path style="fill: rgb(129, 122, 122); stroke: rgb(0, 0, 0);" d="M 145.397 446.835 L 149.122 393.619"/>
+    <path style="stroke: rgb(0, 0, 0); fill: rgb(98, 74, 46);" d="M 122.595 445.369 L 149.179 446.9 L 156.999 490.609 L 75.445 489.487 L 80.93 467.097 C 82.732 462.892 119.153 461.555 116.786 467.078 L 122.595 445.369 Z"/>
+    <path style="fill: rgb(129, 122, 122); stroke: rgb(0, 0, 0);" d="M 116.281 440.444 L 130.51 397.988"/>
+    <path style="fill: rgb(129, 122, 122); stroke: rgb(0, 0, 0);" d="M 123.092 442.759 L 137.812 395.05"/>
+    <path style="fill: rgb(129, 122, 122); stroke: rgb(0, 0, 0);" d="M 135.062 443.926 L 143.824 394.191"/>
+  </g>
+</svg>

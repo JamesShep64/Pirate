@@ -22,8 +22,15 @@ const ASSET_NAMES = [
   'cannonBarrel.svg',
   'cannonTurret.svg',
   'planet.svg',
-
-  
+  'cannonLoad.svg',
+  'hairLeft.svg',
+  'hairRight.svg',
+  'headAndTorso.svg',
+  'leftArm.svg',
+  'rightArm.svg',
+  'leftLeg.svg',
+  'rightLeg.svg',
+  'hat.svg',
 ];
 
 const assets = {};

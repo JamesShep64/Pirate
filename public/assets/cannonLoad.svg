@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 164 92" width="164px" height="92px" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="151.711" y1="21.013" x2="151.711" y2="56.546" id="gradient-0" gradientTransform="matrix(0.920127, 0.391619, -1.049961, 2.466937, 65.427649, -133.084799)">
+      <stop offset="0" style="stop-color: rgb(255, 255, 255);"/>
+      <stop offset="1" style="stop-color: rgba(0, 0, 0, 1)"/>
+    </linearGradient>
+  </defs>
+  <path id="barrel" style="fill: rgb(255, 0, 0);" d="M 56.578 -33.168 C 42.883 -12.732 25.434 92.376 35.417 104.23 C 45.778 120.172 55.947 123.711 87.557 127.395 C 126.096 140.104 133.365 -8.046 128.41 -17.507 C 125.691 -31.594 71.904 -44.652 56.713 -33.346 C 51.327 -14.698 125.967 -3.735 128.27 -18.604" transform="matrix(0.187068, 0.982347, -0.982347, 0.187068, 110.417566, -42.896622)"/>
+  <path style="fill: url(#gradient-0);" d="M 117.032 24.132 C 116.868 45.723 185.927 64.137 186.009 53.388 C 192.074 42.12 124.011 11.162 117.032 24.132 Z" transform="matrix(0.363412, 0.931629, -0.931629, 0.363412, 133.091463, -112.881357)" bx:origin="0.463 0.561"/>
+</svg>

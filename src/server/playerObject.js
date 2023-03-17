@@ -176,7 +176,7 @@ class PlayerObject extends Polygon{
         }
         this.gvel.x += dt * this.gravity.x * this.gravityMult * 5;
         this.gvel.y += dt * this.gravity.y * this.gravityMult * 5;
-        if(this.gvel.x + this.gvel.y > 200){
+        if(Math.abs(this.gvel.x) + Math.abs(this.gvel.y) > 200){
           this.gvel.y = 200 * this.gravity.y;
           this.gvel.x = 200 * this.gravity.x;
         }
@@ -495,6 +495,11 @@ withinVisionRect(other,width,height){
 return false;
 }
 serializeForUpdate() {
+  var walking = false;
+  if(this.isCol && (this.movingLeft || this.movingRight)){
+    walking = true;
+  }
+  
   return {
     eyesX : this.eyes.x,
     eyesY : this.eyes.y,
@@ -508,6 +513,10 @@ serializeForUpdate() {
     outOfBoundsTimer : this.outOfBoundsTimer,
     holdingPower : this.holdingPower,
     direction : this.direction,
+    walking:walking,
+    velocity:this.netVelocity.magnatude(),
+    gVel:Math.abs(this.gvel.x) + Math.abs(this.gvel.y),
+    climbing:this.movingUp || this.movingDown,
 
   };
 }

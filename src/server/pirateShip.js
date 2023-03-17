@@ -576,7 +576,7 @@ class PirateShip extends Polygon{
       }
     }
     if(!no){
-      this.damages.push({point : damage, surface : j, health : 190 - power});
+      this.damages.push({point : damage, surface : j, health : 190 - power < 0 ? 0 : 190 - power});
     }
     
   }

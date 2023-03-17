@@ -11,7 +11,6 @@ const canvas = document.getElementById('game-canvas');
 const context = canvas.getContext('2d');
 context.save();
 setCanvasDimensions();
-
 function setCanvasDimensions() {
   // On small screens (e.g. phones), we want to "zoom out" so players can still see at least
   // 800 in-game units of width.
@@ -21,13 +20,31 @@ function setCanvasDimensions() {
 }
 
 window.addEventListener('resize', debounce(40, setCanvasDimensions));
+
+var leftHairAngle = 0;
+var rightHairAngle = 0;
+var leftHairDirection = 1;
+var rightHairDirection = 1;
+var leftHairPrevDir = -1;
+var rightHairPrevDir = -1;
+
+var leftLegAngle = 0;
+var rightLegAngle = 0;
+var leftLegDirection = 1;
+var rightLegDirection = 1;
+var armAngle = 0;
+var armDirection = 1;
+
+var lastUpdateTime = Date.now();
 function render() {
+  const now = Date.now();
+  const dt = (now - lastUpdateTime) / 1000;
+  lastUpdateTime = now;
+
   const { me, others, blocks, ships,cannonBalls,grapples,explosions,planets,asteroids} = getCurrentState();
   if (!me) {
     return;
   }
-  const now = Date.now();
-  lastUpdateTime = now;
   // Draw background
   renderBackground(me.eyesX, me.eyesY);
 
@@ -101,12 +118,136 @@ function render() {
   
   //draw me
   if(!me.dead){
-    var character = new Image();
+    var hairLeft = getAsset('hairLeft.svg');
+    var hairRight = getAsset('hairRight.svg');
+    var hat = getAsset('hat.svg');
+    var headAndTorso = getAsset('headAndTorso.svg');
+    var leftArm = getAsset('leftArm.svg');
+    var rightArm = getAsset('rightArm.svg');
+    var leftLeg = getAsset('leftLeg.svg');
+    var rightLeg = getAsset('rightLeg.svg');
+
+    leftHairAngle += (.3 + (me.velocity/150) * 2) * leftHairDirection * dt;
+    rightHairAngle += (.3 + (me.velocity/150) * 1.8) * rightHairDirection * dt;
+    if(leftHairDirection != leftHairPrevDir && Math.abs(leftHairAngle) > (.15 + me.velocity/150) * .324){
+      leftHairDirection *= -1;
+      leftHairPrevDir *=-1;
+    }
+    if(rightHairDirection != rightHairPrevDir && Math.abs(rightHairAngle) > (.15 + me.velocity/150) * .324){
+      rightHairDirection *= -1;
+      rightHairPrevDir *=-1;
+
+    }
+    if(me.walking){
+      leftLegAngle += 9 * leftLegDirection * dt;
+      rightLegAngle += 7 * rightLegDirection * dt;
+      
+      if(Math.abs(leftLegAngle) > .424){
+        leftLegDirection *= -1;
+      }
+      if(Math.abs(rightLegAngle) > .424){
+        rightLegDirection *= -1;
+      }
+    }
+    else{
+      leftLegAngle = 0;
+      rightLegAngle = 0;
+    }
+
+    if(me.climbing){
+      armAngle += armDirection * 4 * dt;    
+      if(Math.abs(armAngle) > 1.745){
+        armDirection = -1;
+      }
+      else if(armAngle < -.2){
+        armDirection = 1;
+      }
+    }
+    else{
+      var b = me.gVel == 0;
+      if(b){
+        armAngle -= 2 * dt;   
+        if(armAngle < 0){
+          armAngle = 0;
+        }      
+      }
+      else{
+        armAngle = (me.gVel/2) * (Constants.PI/180);
+        
+      }
+    }
+
+
     context.save();
-    character.src = '/assets/'+'pirate'+'.svg';
     context.translate(canvas.width/2,canvas.height/2);
     context.rotate(me.direction);
-    context.drawImage(character, -20,-35,40,60);
+    context.translate(-20,-35);
+    //left leg
+    context.translate((155/372) * 40,(370/492) * 60);
+    context.rotate(leftLegAngle);
+    context.translate(-(155/372) * 40,-(370/492) * 60);
+
+    context.drawImage(leftLeg, 0,0,40,60);
+    context.restore();
+    context.save();
+    context.translate(canvas.width/2,canvas.height/2);
+    context.rotate(me.direction);
+    context.translate(-20,-35);
+    //right leg
+    context.translate((214.8/372) * 40,(370/492) * 60);
+    context.rotate(rightLegAngle);
+    context.translate(-(214.8/372) * 40,-(370/492) * 60);
+    context.drawImage(rightLeg, 0,0,40,60);
+    /////////////////////
+    context.restore();
+    context.save();
+    context.translate(canvas.width/2,canvas.height/2);
+    context.rotate(me.direction);
+    context.translate(-20,-35);
+    context.drawImage(headAndTorso, 0,0,40,60);
+    
+    //left hair
+    context.translate((114/372) * 40,(80/492) * 60);
+    context.rotate(leftHairAngle);
+    context.translate(-(114/372) * 40,-(80/492) * 60);
+    
+    context.drawImage(hairLeft, 0,0,40,60);
+    context.restore();
+    context.save();
+    context.translate(canvas.width/2,canvas.height/2);
+    context.rotate(me.direction);
+    context.translate(-20,-35);
+    //right hair
+    context.translate((245/372) * 40,(80/492) * 60);
+    context.rotate(rightHairAngle);
+    context.translate(-(245/372) * 40,-(80/492) * 60);
+    context.drawImage(hairRight, 0,0,40,60);
+    
+    context.restore();
+    context.save();
+    context.translate(canvas.width/2,canvas.height/2);
+    context.rotate(me.direction);
+    context.translate(-20,-35);
+
+    context.drawImage(hat, 0,0,40,60);
+//left arm
+context.translate((140/372) * 40,(290/492) * 60);
+context.rotate(armAngle);
+context.translate(-(140/372) * 40,-(290/492) * 60);
+
+context.drawImage(leftArm, 0,0,40,60);
+context.restore();
+context.save();
+context.translate(canvas.width/2,canvas.height/2);
+context.rotate(me.direction);
+context.translate(-20,-35);
+//right arm
+context.translate((235/372) * 40,(292/492) * 60);
+context.rotate(-armAngle);
+context.translate(-(235/372) * 40,-(292/492) * 60);
+context.drawImage(rightArm, 0,0,40,60);
+
+
     context.restore();
     if(me.holdingPower){
       var boost = new Image();
@@ -509,7 +650,6 @@ function drawShip(ship,me){
   });
   context.globalAlpha = 1;
 }
-
 function drawCannonWire(points,me,x,y){
   var canvasX = canvas.width / 2 + x - me.eyesX;
   var canvasY = canvas.height / 2 + y - me.eyesY;
@@ -655,16 +795,19 @@ function drawShipParts(ship,player){
       context.fillStyle = 'black';
       */
       ///
-      var cannonBarrel = new Image();
-      cannonBarrel.src = '/assets/'+'cannonBarrel'+'.svg';
+      var cannonBarrel = getAsset('cannonBarrel.svg');
+      var cannonLoad = getAsset('cannonLoad.svg');
       context.save();
-      context.translate(canvasX,canvasY);
+      context.translate(canvasX,canvasY - 5);
       context.rotate(ship.cannon1.direction);
+      context.translate(0,5);
       context.drawImage(cannonBarrel, -8,-15,55,20);
+      context.globalAlpha = (ship.cannon1.loadTimer)/16;
+      context.drawImage(cannonLoad, -8,-15,55,20);
+      context.globalAlpha = 1;
       context.restore();
 
-      var cannonTurret = new Image();
-      cannonTurret.src = '/assets/'+'cannonTurret'+'.svg';
+      var cannonTurret = getAsset('cannonTurret.svg');
       context.save();
       context.translate(canvasX,canvasY);
       context.rotate(ship.direction);
@@ -676,9 +819,13 @@ function drawShipParts(ship,player){
       var canvasX = canvas.width / 2 + ship.cannonLower1.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannonLower1.y - player.eyesY;
       context.save();
-      context.translate(canvasX,canvasY);
+      context.translate(canvasX,canvasY-5);
       context.rotate(ship.cannonLower1.direction);
+      context.translate(0,5);
       context.drawImage(cannonBarrel, -8,-14,55,20);
+      context.globalAlpha = (ship.cannonLower1.loadTimer)/16;
+      context.drawImage(cannonLoad, -8,-15,55,20);
+      context.globalAlpha = 1;
       context.restore();
 
       context.save();
@@ -693,15 +840,20 @@ function drawShipParts(ship,player){
       var canvasX = canvas.width / 2 + ship.cannonLower2.x - player.eyesX;
       var canvasY = canvas.height / 2 + ship.cannonLower2.y - player.eyesY;
       context.save();
-      context.translate(canvasX,canvasY);
+      context.translate(canvasX,canvasY-5);
       context.rotate(ship.cannonLower2.direction);
+      context.translate(0,5);
       context.drawImage(cannonBarrel, -8,-14,55,20);
+      context.globalAlpha = (ship.cannonLower2.loadTimer)/16;
+      context.drawImage(cannonLoad, -8,-15,55,20);
+      context.globalAlpha = 1;
       context.restore();
 
       context.save();
       context.translate(canvasX,canvasY);
       context.rotate(ship.direction);
       context.drawImage(cannonTurret, -13,-15,25,25);
+      context.globalAlpha = 1;
       context.restore();
 
       drawMunitions(ship,player,ship.cannonLower2);

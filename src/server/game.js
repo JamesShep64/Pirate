@@ -402,7 +402,6 @@ class Game {
         }
         //player explosion colision
         Object.values(ship.explosions).filter(e => e.hitboxExist < 3).forEach(e =>{
-          if(player.withinRect(e,e.radius,e.radius)){
             if(player.distanceTo(e) < player.radius + e.radius){
               var d = new Vector(player.pos.x - (e.point.x + ship.pos.x), player.pos.y - (e.point.y + ship.pos.y)).unit();
               var p = new Vector(e.surface.y, -e.surface.x).unit();
@@ -414,7 +413,6 @@ class Game {
               player.rotateTo(0);
           
             }
-          }
         });
     });
       //PLAYER LADDER FIX
